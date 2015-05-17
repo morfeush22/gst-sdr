@@ -32,12 +32,11 @@ struct Data {
 	GstElement *decoder_;
 	GstElement *parser_;
 
-	GstElement *resample_;
-	GstElement *filter_;
+	GstElement *pitch_;
+	GstElement *converter_;
 
 	GMainLoop *loop_;
-
-	uint32_t current_rate_;
+	gboolean ready_;
 };
 
 struct CmpStr {
@@ -87,6 +86,11 @@ public:
 	 * @return init sample rate
 	 */
 	uint32_t GetSampleRate();
+
+	/**
+	 * Set playback speed
+	 */
+	void SetPlaybackSpeed(float);
 
 private:
 	PlayerHelpers::Data data_;

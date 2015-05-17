@@ -5,8 +5,6 @@
  *      Author: morfeush22
  */
 
-#define RESAMP_RATE 44100
-
 #include "Player.h"
 #include <stdio.h>
 
@@ -67,6 +65,12 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer ptr) {
 		break;
 	}
 
+	case GST_MESSAGE_ASYNC_DONE: {
+		g_print ("GStreamer: prerolled, lock'n'load\n");
+		data->ready_ = TRUE;
+		break;
+	}
+
 	case GST_MESSAGE_TAG: {
 		GstTagList *tags = NULL;
 
@@ -95,7 +99,6 @@ src_(src),
 sink_(sink) {
 	gst_init (NULL, NULL);
 	data_.player_ = this;
-	data_.current_rate_ = sample_rate_;
 }
 
 Player::~Player() {
@@ -122,8 +125,8 @@ void Player::ConstructObjects() {
 	data_.decoder_ = gst_element_factory_make("faad", "decoder");
 	data_.parser_ = gst_element_factory_make("aacparse", "parser");
 
-	data_.resample_ = gst_element_factory_make("audioresample", "resampler");
-	data_.filter_ = gst_element_factory_make("capsfilter", "filter");
+	data_.pitch_ = gst_element_factory_make("pitch", "pitch");
+	data_.converter_ = gst_element_factory_make("audioconvert", "converter");;
 
 	g_assert(data_.pipeline_
 			&& data_.src_
@@ -131,8 +134,8 @@ void Player::ConstructObjects() {
 			&& data_.iddemux_
 			&& data_.decoder_
 			&& data_.parser_
-			&& data_.resample_
-			&& data_.filter_);	//check if all elements created
+			&& data_.pitch_
+			&& data_.converter_);	//check if all elements created
 }
 
 void Player::SetPropeties() {
@@ -147,8 +150,8 @@ void Player::SetPropeties() {
 			data_.iddemux_,
 			data_.decoder_,
 			data_.parser_,
-			data_.resample_,
-			data_.filter_,
+			data_.pitch_,
+			data_.converter_,
 			NULL);	//add elements to bin
 
 	bus = gst_element_get_bus(data_.pipeline_);
@@ -176,32 +179,15 @@ uint32_t Player::GetSampleRate() {
 }
 
 void Player::LinkElements() {
-	GstCaps *audio_caps_res;
-	gchar *audio_caps_text_res;
-
-	audio_caps_text_res = g_strdup_printf(AUDIO_CAPS, RESAMP_RATE);
-	audio_caps_res = gst_caps_from_string(audio_caps_text_res);
-
 	g_assert(gst_element_link_many(data_.src_,
 			data_.iddemux_,
 			data_.parser_,
 			data_.decoder_,
-			data_.resample_,
-			NULL)
-	);	//link first part of chain
-
-	g_assert(gst_element_link_filtered(data_.resample_,
-			data_.filter_,
-			audio_caps_res)
-	);	//link filter
-
-	g_assert(gst_element_link_many(data_.filter_,
+			data_.converter_,
+			data_.pitch_,
 			data_.sink_,
 			NULL)
-	);	//link last part of chain
-
-	gst_caps_unref(audio_caps_res);
-	g_free(audio_caps_text_res);
+	);	//link chain
 }
 
 AbstractSrc* Player::GetSrc() {
@@ -210,4 +196,8 @@ AbstractSrc* Player::GetSrc() {
 
 AbstractSink* Player::GetSink() {
 	return sink_;
+}
+
+void Player::SetPlaybackSpeed(float ratio) {
+	g_object_set(G_OBJECT(data_.pitch_), "tempo", ratio, NULL);
 }

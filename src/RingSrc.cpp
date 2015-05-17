@@ -11,27 +11,28 @@
 
 #include <fstream>
 
-#define BUFF_SIZE 4096
+#define RESOLUTION 0.001
 
-RingSrc::RingSrc(const char *path):
-source_id_(0) {
-	//for now, read from file
-	std::ifstream in_file(path, std::ifstream::binary);
-	if(in_file.is_open()) {
-		in_file.seekg(0, std::ios::end);
-		size_ = in_file.tellg();
-		in_file.seekg(0, std::ios::beg);
+#define BUFF_SIZE 1000	//1kB
+#define MULTIPLIER 100
 
-		buff_ = new char[size_];
+#define HOW_MANY 1
+#define FILE_CHUNKS 5
 
-		in_file.read(buff_, size_);
+#define APP_SRC_BUFF_SIZE 1000*25	//25kB
 
-		in_file.close();
-	}
+RingSrc::RingSrc(const char *path, float threshold):
+source_id_(0),
+threshold_(threshold),
+path_(path),
+current_ratio_(1.0) {
+	file_wrapper_ = new FileWrapper(path_, FILE_CHUNKS*BUFF_SIZE*MULTIPLIER);	//500kB
+	ring_buffer_ = new RingBuffer<char>(HOW_MANY*BUFF_SIZE*MULTIPLIER);	//100kB
 }
 
 RingSrc::~RingSrc() {
-	delete[] buff_;
+	delete file_wrapper_;
+	delete ring_buffer_;
 }
 
 const char *RingSrc::GetName() {
@@ -43,6 +44,8 @@ static gboolean ReadData(PlayerHelpers::Data *ptr) {
 	Player *player = (Player *)data->player_;
 	RingSrc *src = (RingSrc *)player->GetSrc();
 
+	src->ProcessThreshold(ptr);
+
 	GstBuffer *buffer;
 	char *it;
 	gint size;
@@ -53,20 +56,11 @@ static gboolean ReadData(PlayerHelpers::Data *ptr) {
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
 	it = (char *)map.data;
 
-	if(src->GetSize() >= BUFF_SIZE)
-		size = BUFF_SIZE;
-	else
-		size = src->GetSize();
-
-	memcpy(it, src->GetBuff(), size);
+	size = src->GetRingBuffer()->sReadFrom(it, BUFF_SIZE);
 
 	gst_buffer_unmap(buffer, &map);
 
-	src->SetSize(size);
-	src->SetBuff(size);
-
 	ret = gst_app_src_push_buffer(GST_APP_SRC(data->src_), buffer);
-
 
 	if(ret !=  GST_FLOW_OK){
 		return FALSE;
@@ -85,10 +79,12 @@ static void StartFeed(GstElement *pipeline, guint size, PlayerHelpers::Data *ptr
 	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
 	Player *player = (Player *)data->player_;
 	RingSrc *src = (RingSrc *)player->GetSrc();
-	guint source_id = src->GetSourceId();
+	guint *source_id = src->GetSourceId();
 
-	if (source_id == 0) {
-		source_id = g_idle_add((GSourceFunc)ReadData, data);
+	//g_print("start feed... %lu\n", src->GetRingBuffer()->DataStored());
+
+	if (*source_id == 0) {
+		*source_id = g_idle_add((GSourceFunc)ReadData, ptr);
 	}
 }
 
@@ -96,11 +92,13 @@ static void StopFeed(GstElement *pipeline, PlayerHelpers::Data *ptr) {
 	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
 	Player *player = (Player *)data->player_;
 	RingSrc *src = (RingSrc *)player->GetSrc();
-	guint source_id = src->GetSourceId();
+	guint *source_id = src->GetSourceId();
 
-	if (source_id != 0) {
-		g_source_remove(source_id);
-		source_id = 0;
+	//g_print("stop feed... %lu\n", src->GetRingBuffer()->DataStored());
+
+	if (*source_id != 0) {
+		g_source_remove(*source_id);
+		*source_id = 0;
 	}
 }
 
@@ -109,58 +107,80 @@ void RingSrc::InitSrc(void *ptr) {
 
 	g_signal_connect(data->src_, "need-data", G_CALLBACK(StartFeed), data);
 	g_signal_connect(data->src_, "enough-data", G_CALLBACK(StopFeed), data);
+
+	gst_app_src_set_max_bytes(GST_APP_SRC(data->src_), APP_SRC_BUFF_SIZE);
 }
 
-uint32_t RingSrc::GetSize() {
-	return size_;
+float RingSrc::DecrementRatio(void *ptr) {
+	current_ratio_ -= RESOLUTION;
+	if(current_ratio_<0.975)
+		current_ratio_ = 0.975;
+
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
+	Player *player = (Player *)data->player_;
+	player->SetPlaybackSpeed(current_ratio_);
+
+	return current_ratio_;
 }
 
-void RingSrc::SetSize(uint32_t to_size) {
-	size_ -= to_size;
+float RingSrc::IncrementRatio(void *ptr) {
+	current_ratio_ += RESOLUTION;
+	if(current_ratio_>1.25)
+		current_ratio_ = 1.25;
+
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
+	Player *player = (Player *)data->player_;
+	player->SetPlaybackSpeed(current_ratio_);
+
+	return current_ratio_;
 }
 
-char *RingSrc::GetBuff() {
-	return buff_;
+guint *RingSrc::GetSourceId() {
+	return &source_id_;
 }
 
-void RingSrc::SetBuff(uint32_t point_to) {
-	buff_ += point_to;
+size_t RingSrc::ReadFromFile() {
+	const char *const *ptr = file_wrapper_->GetCurrentChunkPointer();
+
+	uint32_t returned = file_wrapper_->GetNextChunk();
+
+	return ring_buffer_->sWriteInto(const_cast<char *>(*ptr), returned);
 }
 
-uint32_t RingSrc::DecrementPlaybackSpeed(GstElement *src, uint32_t current_speed) {
-	GstCaps *src_caps;
-	gchar *text;
-
-	current_speed += 1;
-	text = g_strdup_printf(AUDIO_CAPS, current_speed);
-
-	src_caps = gst_caps_from_string(text);
-
-	g_object_set(G_OBJECT(src), "caps", src_caps, NULL);
-
-	gst_caps_unref(src_caps);
-	g_free(text);
-
-	return current_speed;
+size_t RingSrc::ParseThreshold(float percent) {
+	return size_t(HOW_MANY*BUFF_SIZE*MULTIPLIER)*percent;
 }
 
-uint32_t RingSrc::IncrementPlaybackSpeed(GstElement *src, uint32_t current_speed) {
-	GstCaps *src_caps;
-	gchar *text;
+void RingSrc::ProcessThreshold(void *ptr) {
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
+	Player *player = (Player *)data->player_;
+	RingSrc *buffer = (RingSrc *)player->GetSrc();
 
-	current_speed -= 1;
-	text = g_strdup_printf(AUDIO_CAPS, current_speed);
+	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu\n", buffer->GetRingBuffer()->DataStored(), (HOW_MANY*BUFF_SIZE*MULTIPLIER), ParseThreshold(0.5+0.4-threshold_), ParseThreshold(0.5+0.2+threshold_));
 
-	src_caps = gst_caps_from_string(text);
+	if(ring_buffer_->DataStored()<ParseThreshold(0.1)) {
+		ReadFromFile();
+		ProcessThreshold(ptr);
+		return;
+	}
 
-	g_object_set(G_OBJECT(src), "caps", src_caps, NULL);
+	if(data->ready_) {
+		float ratio;
 
-	gst_caps_unref(src_caps);
-	g_free(text);
+		if(ring_buffer_->DataStored()<ParseThreshold(0.5-threshold_)) {
+			ratio = DecrementRatio(ptr);
+			g_warning("current ratio: %f", ratio);
+			return;
+		}
 
-	return current_speed;
+		if(ring_buffer_->DataStored()>ParseThreshold(0.5+threshold_)) {
+			ratio = IncrementRatio(ptr);
+			g_warning("current ratio: %f", ratio);
+			return;
+		}
+	}
 }
 
-guint &RingSrc::GetSourceId() {
-	return source_id_;
+RingBuffer<char> *RingSrc::GetRingBuffer() {
+	return ring_buffer_;
 }

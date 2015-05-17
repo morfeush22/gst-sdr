@@ -6,6 +6,7 @@
  */
 
 #include "PulseSink.h"
+#include "Player.h"
 
 PulseSink::PulseSink() {
 }
@@ -13,7 +14,7 @@ PulseSink::PulseSink() {
 PulseSink::~PulseSink() {
 }
 
-void PulseSink::InitSink(void *) {
+void PulseSink::InitSink(void *ptr) {
 
 }
 
