@@ -17,7 +17,7 @@
 #define MULTIPLIER 100
 
 #define HOW_MANY 1
-#define FILE_CHUNKS 5
+#define FILE_CHUNKS 0.5
 
 #define APP_SRC_BUFF_SIZE 1000*25	//25kB
 
@@ -156,9 +156,9 @@ void RingSrc::ProcessThreshold(void *ptr) {
 	Player *player = (Player *)data->player_;
 	RingSrc *buffer = (RingSrc *)player->GetSrc();
 
-	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", buffer->GetRingBuffer()->DataStored(), (HOW_MANY*BUFF_SIZE*MULTIPLIER), ParseThreshold(0.5+0.4-threshold_), ParseThreshold(0.5+0.2+threshold_), ParseThreshold(0.1));
+	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", buffer->GetRingBuffer()->DataStored(), (HOW_MANY*BUFF_SIZE*MULTIPLIER), ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
 
-	if(ring_buffer_->DataStored()<ParseThreshold(0.1)) {
+	if(ring_buffer_->DataStored()<ParseThreshold(0.25)) {
 		ReadFromFile();
 		ProcessThreshold(ptr);
 		return;
