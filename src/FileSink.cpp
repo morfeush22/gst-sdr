@@ -8,7 +8,7 @@
 #include "FileSink.h"
 #include "Player.h"
 
-FileSink::FileSink(const char *path): path_(path), queue_(NULL) {
+FileSink::FileSink(const char *path): path_(path), queue_(NULL), sink_(NULL) {
 }
 
 FileSink::~FileSink() {
@@ -16,8 +16,6 @@ FileSink::~FileSink() {
 
 void FileSink::InitSink(void *ptr) {
 	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
-
-	g_object_set(data->src_, "location", path_, NULL);
 
 	char buff[100];
 	strcpy(buff, GetName());
@@ -43,6 +41,8 @@ void FileSink::InitSink(void *ptr) {
 			sink_,
 			NULL)
 	);
+
+	g_object_set(sink_, "location", path_, NULL);
 }
 
 const char* FileSink::GetName() const {

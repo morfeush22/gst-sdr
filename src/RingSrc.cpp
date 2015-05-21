@@ -116,8 +116,8 @@ void RingSrc::InitSrc(void *ptr) {
 
 float RingSrc::DecrementRatio(void *ptr) {
 	current_ratio_ -= RESOLUTION;
-	if(current_ratio_<0.975)
-		current_ratio_ = 0.975;
+	if(current_ratio_<(1-threshold_))
+		current_ratio_ = 1-threshold_;
 
 	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
 	Player *player = (Player *)data->player_;
@@ -128,8 +128,8 @@ float RingSrc::DecrementRatio(void *ptr) {
 
 float RingSrc::IncrementRatio(void *ptr) {
 	current_ratio_ += RESOLUTION;
-	if(current_ratio_>1.25)
-		current_ratio_ = 1.25;
+	if(current_ratio_>(1+threshold_))
+		current_ratio_ = 1+threshold_;
 
 	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
 	Player *player = (Player *)data->player_;
@@ -156,10 +156,8 @@ size_t RingSrc::ParseThreshold(float percent) {
 
 void RingSrc::ProcessThreshold(void *ptr) {
 	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
-	Player *player = (Player *)data->player_;
-	RingSrc *buffer = (RingSrc *)player->GetSrc();
 
-	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", buffer->GetRingBuffer()->DataStored(), (HOW_MANY*BUFF_SIZE*MULTIPLIER), ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
+	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", ring_buffer_->DataStored(), (HOW_MANY*BUFF_SIZE*MULTIPLIER), ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
 
 	if(ring_buffer_->DataStored()<ParseThreshold(0.25)) {
 		ReadFromFile();

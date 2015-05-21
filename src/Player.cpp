@@ -174,6 +174,7 @@ const uint32_t Player::GetSampleRate() const {
 AbstractSink *Player::AddSink(AbstractSink *sink) {
 	sink->InitSink(static_cast<void *>(&data_));
 	sinks_.push_back(sink);
+	//g_print("%d\n", sinks_.size());
 	return sink;
 }
 
@@ -185,6 +186,8 @@ void Player::RemoveSink(AbstractSink *sink) {
 			AbstractSink *s = *it;
 			s->Finish(&data_);
 			sinks_.erase(it);
+			//printf("%s\n", s->GetName());
+			//printf("%d\n", sinks_.size());
 			return;
 		}
 	}
