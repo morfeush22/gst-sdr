@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <map>
+#include <list>
 
 namespace PlayerHelpers {
 
@@ -26,7 +27,6 @@ struct Data {
 	GstElement *pipeline_;
 
 	GstElement *src_;
-	GstElement *sink_;
 
 	GstElement *iddemux_;
 	GstElement *decoder_;
@@ -35,12 +35,14 @@ struct Data {
 	GstElement *pitch_;
 	GstElement *converter_;
 
+	GstElement *tee_;
+
 	GMainLoop *loop_;
 	gboolean ready_;
 };
 
 struct CmpStr {
-	bool operator()(char const *a, char const *b) {
+	bool operator()(char const *a, char const *b) const {
 		return strcmp(a, b) < 0;
 	}
 };
@@ -55,7 +57,7 @@ public:
 	 * @param *sink pointer to AbstractSink object
 	 * @param sample_rate starting sample rate
 	 */
-	Player(AbstractSrc *, AbstractSink *, uint32_t);
+	Player(AbstractSrc *, uint32_t);
 	virtual ~Player();
 
 	/**
@@ -67,13 +69,12 @@ public:
 	 * Get source
 	 * @return current AbstractSrc object
 	 */
-	AbstractSrc *GetSrc();
+	const AbstractSrc *GetSrc() const;
 
 	/**
-	 * Get sink
-	 * @return current AbstractSink object
+	 * Remove sink
 	 */
-	AbstractSink *GetSink();
+	void RemoveSink(AbstractSink *);
 
 	/**
 	 * Get received tags
@@ -85,24 +86,34 @@ public:
 	 * Get sample rate
 	 * @return init sample rate
 	 */
-	uint32_t GetSampleRate();
+	const uint32_t GetSampleRate() const;
 
 	/**
 	 * Set playback speed
 	 */
 	void SetPlaybackSpeed(float);
 
+	/**
+	 * Add new sink
+	 * @return added sink
+	 */
+	AbstractSink *AddSink(AbstractSink *);
+
 private:
 	PlayerHelpers::Data data_;
 	const uint32_t sample_rate_;
 	AbstractSrc *src_;
-	AbstractSink *sink_;
+
+	std::list<AbstractSink *> sinks_;
+
 	std::map<const char *, char *, PlayerHelpers::CmpStr> tags_map_;
 
 	void SetTagsFilters();
 	void ConstructObjects();
 	void SetPropeties();
 	void LinkElements();
+
+	void Init();
 
 };
 

@@ -1,28 +1,30 @@
 /*
- * PulseSink.h
+ * FileSink.h
  *
- *  Created on: May 13, 2015
+ *  Created on: May 21, 2015
  *      Author: morfeush22
  */
 
-#ifndef SRC_PULSESINK_H_
-#define SRC_PULSESINK_H_
+#ifndef SRC_FILESINK_H_
+#define SRC_FILESINK_H_
 
 #include "AbstractSink.h"
 #include <gst/gst.h>
 
-class PulseSink: public AbstractSink {
+class FileSink: public AbstractSink {
 public:
-	PulseSink();
-	virtual ~PulseSink();
+	FileSink(const char *);
+	virtual ~FileSink();
 
 	void InitSink(void *);
 	const char *GetName() const;
 	void Finish(void *);
 
 private:
+	const char *path_;
+
 	GstElement *queue_;
 	GstElement *sink_;
 };
 
-#endif /* SRC_PULSESINK_H_ */
+#endif /* SRC_FILESINK_H_ */

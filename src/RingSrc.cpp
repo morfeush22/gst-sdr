@@ -105,6 +105,9 @@ static void StopFeed(GstElement *pipeline, PlayerHelpers::Data *ptr) {
 void RingSrc::InitSrc(void *ptr) {
 	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
 
+	data->src_ = gst_element_factory_make(GetName(), "src");
+	g_assert(data->src_);
+
 	g_signal_connect(data->src_, "need-data", G_CALLBACK(StartFeed), data);
 	g_signal_connect(data->src_, "enough-data", G_CALLBACK(StopFeed), data);
 

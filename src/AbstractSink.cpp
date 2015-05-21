@@ -6,9 +6,14 @@
  */
 
 #include "AbstractSink.h"
+#include <string.h>
 
 AbstractSink::~AbstractSink() {
 }
 
 AbstractSink::AbstractSink() {
+}
+
+bool AbstractSink::operator ==(const AbstractSink &other) const {
+	return !strcmp(GetName(), other.GetName());
 }

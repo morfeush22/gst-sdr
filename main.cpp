@@ -14,7 +14,8 @@ int main() {
 
 	PulseSink *sink = new PulseSink();
 
-	Player player(src, sink, 44100);
+	Player player(src, 44100);
+	player.AddSink(sink);
 	player.Process();
 
 	delete sink;

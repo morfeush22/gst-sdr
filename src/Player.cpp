@@ -93,12 +93,12 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer ptr) {
 	return TRUE;
 }
 
-Player::Player(AbstractSrc *src, AbstractSink *sink, uint32_t sample_rate):
+Player::Player(AbstractSrc *src, uint32_t sample_rate):
 sample_rate_(sample_rate),
-src_(src),
-sink_(sink) {
+src_(src) {
 	gst_init (NULL, NULL);
 	data_.player_ = this;
+	Init();
 }
 
 Player::~Player() {
@@ -106,10 +106,6 @@ Player::~Player() {
 }
 
 void Player::Process() {
-	ConstructObjects();
-	SetPropeties();
-	LinkElements();
-
 	gst_element_set_state((GstElement*)data_.pipeline_, GST_STATE_PLAYING);
 	data_.loop_ = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(data_.loop_);
@@ -118,40 +114,37 @@ void Player::Process() {
 void Player::ConstructObjects() {
 	data_.pipeline_ = gst_pipeline_new("player");
 
-	data_.src_ = gst_element_factory_make(src_->GetName(), "src");
-	data_.sink_ = gst_element_factory_make(sink_->GetName(), "sink");
-
 	data_.iddemux_ = gst_element_factory_make("id3demux", "tag_demuxer");
 	data_.decoder_ = gst_element_factory_make("faad", "decoder");
 	data_.parser_ = gst_element_factory_make("aacparse", "parser");
 
 	data_.pitch_ = gst_element_factory_make("pitch", "pitch");
-	data_.converter_ = gst_element_factory_make("audioconvert", "converter");;
+	data_.converter_ = gst_element_factory_make("audioconvert", "converter");
+
+	data_.tee_ = gst_element_factory_make("tee", "tee");
 
 	g_assert(data_.pipeline_
-			&& data_.src_
-			&& data_.sink_
 			&& data_.iddemux_
 			&& data_.decoder_
 			&& data_.parser_
 			&& data_.pitch_
-			&& data_.converter_);	//check if all elements created
+			&& data_.converter_
+			&& data_.tee_);	//check if all elements created
 }
 
 void Player::SetPropeties() {
 	GstBus *bus;
 
 	src_->InitSrc(static_cast<void *>(&data_));
-	sink_->InitSink(static_cast<void *>(&data_));
 
 	gst_bin_add_many(GST_BIN(data_.pipeline_),
 			data_.src_,
-			data_.sink_,
 			data_.iddemux_,
 			data_.decoder_,
 			data_.parser_,
 			data_.pitch_,
 			data_.converter_,
+			data_.tee_,
 			NULL);	//add elements to bin
 
 	bus = gst_element_get_bus(data_.pipeline_);
@@ -174,8 +167,33 @@ std::map<const char*, char*, PlayerHelpers::CmpStr> *Player::GetTagsMap() {
 	return &tags_map_;
 }
 
-uint32_t Player::GetSampleRate() {
+const uint32_t Player::GetSampleRate() const {
 	return sample_rate_;
+}
+
+AbstractSink *Player::AddSink(AbstractSink *sink) {
+	sink->InitSink(static_cast<void *>(&data_));
+	sinks_.push_back(sink);
+	return sink;
+}
+
+void Player::RemoveSink(AbstractSink *sink) {
+	std::list<AbstractSink *>::iterator it;
+	it = sinks_.begin();
+	while(it != sinks_.end()) {
+		if(*(*it) == *sink) {
+			AbstractSink *s = *it;
+			s->Finish(&data_);
+			sinks_.erase(it);
+			return;
+		}
+	}
+}
+
+void Player::Init() {
+	ConstructObjects();
+	SetPropeties();
+	LinkElements();
 }
 
 void Player::LinkElements() {
@@ -185,17 +203,13 @@ void Player::LinkElements() {
 			data_.decoder_,
 			data_.converter_,
 			data_.pitch_,
-			data_.sink_,
+			data_.tee_,
 			NULL)
 	);	//link chain
 }
 
-AbstractSrc* Player::GetSrc() {
+const AbstractSrc *Player::GetSrc() const {
 	return src_;
-}
-
-AbstractSink* Player::GetSink() {
-	return sink_;
 }
 
 void Player::SetPlaybackSpeed(float ratio) {

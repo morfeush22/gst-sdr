@@ -12,12 +12,11 @@ static void SinkHandoffCall(GstElement *fakesink,
 GstBuffer *buffer,
 GstPad *pad,
 gpointer ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
-	Player *player = (Player *)data->player_;
+	Player *player = (Player *)((PlayerHelpers::Data *)ptr)->player_;
 	uint32_t size = gst_buffer_get_size(buffer);
 
 	AbstractSink *sink = player->GetSink();
-	static_cast<FakeSink *>(sink)->AddBytes(size);
+	((FakeSink *)sink)->AddBytes(size);
 }
 
 FakeSink::FakeSink(): bytes_returned_(0) {
