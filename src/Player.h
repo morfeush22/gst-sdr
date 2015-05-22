@@ -21,26 +21,6 @@
 
 namespace PlayerHelpers {
 
-struct Data {
-	void *player_;
-
-	GstElement *pipeline_;
-
-	GstElement *src_;
-
-	GstElement *iddemux_;
-	GstElement *decoder_;
-	GstElement *parser_;
-
-	GstElement *pitch_;
-	GstElement *converter_;
-
-	GstElement *tee_;
-
-	GMainLoop *loop_;
-	gboolean ready_;
-};
-
 struct CmpStr {
 	bool operator()(char const *a, char const *b) const {
 		return strcmp(a, b) < 0;
@@ -99,12 +79,28 @@ public:
 	 */
 	AbstractSink *AddSink(AbstractSink *);
 
-private:
-	PlayerHelpers::Data data_;
-	const uint32_t sample_rate_;
-	AbstractSrc *src_;
+	GstElement *pipeline_;
 
-	std::list<AbstractSink *> sinks_;
+	GstElement *src_;
+
+	GstElement *iddemux_;
+	GstElement *decoder_;
+	GstElement *parser_;
+
+	GstElement *pitch_;
+	GstElement *converter_;
+
+	GstElement *tee_;
+
+	GMainLoop *loop_;
+
+	gboolean ready_;
+
+private:
+	const uint32_t sample_rate_;
+	AbstractSrc *abstract_src_;
+
+	std::list<AbstractSink *> abstract_sinks_;
 
 	std::map<const char *, char *, PlayerHelpers::CmpStr> tags_map_;
 

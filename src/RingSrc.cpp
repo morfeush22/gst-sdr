@@ -40,9 +40,8 @@ const char *RingSrc::GetName() {
 	return "appsrc";
 }
 
-static gboolean ReadData(PlayerHelpers::Data *ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
-	Player *player = (Player *)data->player_;
+static gboolean ReadData(gpointer *ptr) {
+	Player *player = (Player *)ptr;
 	RingSrc *src = (RingSrc *)player->GetSrc();
 
 	src->ProcessThreshold(ptr);
@@ -61,14 +60,14 @@ static gboolean ReadData(PlayerHelpers::Data *ptr) {
 
 	gst_buffer_unmap(buffer, &map);
 
-	ret = gst_app_src_push_buffer(GST_APP_SRC(data->src_), buffer);
+	ret = gst_app_src_push_buffer(GST_APP_SRC(player->src_), buffer);
 
 	if(ret !=  GST_FLOW_OK){
 		return FALSE;
 	}
 
 	if(size != BUFF_SIZE){
-		gst_app_src_end_of_stream((GstAppSrc *)data->src_);
+		gst_app_src_end_of_stream((GstAppSrc *)player->src_);
 		return FALSE;
 	}
 
@@ -76,9 +75,8 @@ static gboolean ReadData(PlayerHelpers::Data *ptr) {
 }
 
 
-static void StartFeed(GstElement *pipeline, guint size, PlayerHelpers::Data *ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
-	Player *player = (Player *)data->player_;
+static void StartFeed(GstElement *pipeline, guint size, gpointer *ptr) {
+	Player *player = (Player *)ptr;
 	RingSrc *src = (RingSrc *)player->GetSrc();
 	guint *source_id = src->GetSourceId();
 
@@ -89,9 +87,8 @@ static void StartFeed(GstElement *pipeline, guint size, PlayerHelpers::Data *ptr
 	}
 }
 
-static void StopFeed(GstElement *pipeline, PlayerHelpers::Data *ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
-	Player *player = (Player *)data->player_;
+static void StopFeed(GstElement *pipeline, gpointer *ptr) {
+	Player *player = (Player *)ptr;
 	RingSrc *src = (RingSrc *)player->GetSrc();
 	guint *source_id = src->GetSourceId();
 
@@ -104,15 +101,15 @@ static void StopFeed(GstElement *pipeline, PlayerHelpers::Data *ptr) {
 }
 
 void RingSrc::InitSrc(void *ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
+	Player *player = static_cast<Player *>(ptr);
 
-	data->src_ = gst_element_factory_make(GetName(), "src");
-	g_assert(data->src_);
+	player->src_ = gst_element_factory_make(GetName(), "src");
+	g_assert(player->src_);
 
-	g_signal_connect(data->src_, "need-data", G_CALLBACK(StartFeed), data);
-	g_signal_connect(data->src_, "enough-data", G_CALLBACK(StopFeed), data);
+	g_signal_connect(player->src_, "need-data", G_CALLBACK(StartFeed), player);
+	g_signal_connect(player->src_, "enough-data", G_CALLBACK(StopFeed), player);
 
-	gst_app_src_set_max_bytes(GST_APP_SRC(data->src_), APP_SRC_BUFF_SIZE);
+	gst_app_src_set_max_bytes(GST_APP_SRC(player->src_), APP_SRC_BUFF_SIZE);
 }
 
 float RingSrc::DecrementRatio(void *ptr) {
@@ -120,8 +117,7 @@ float RingSrc::DecrementRatio(void *ptr) {
 	if(current_ratio_<(1-threshold_))
 		current_ratio_ = 1-threshold_;
 
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
-	Player *player = (Player *)data->player_;
+	Player *player = static_cast<Player *>(ptr);
 	player->SetPlaybackSpeed(current_ratio_);
 
 	return current_ratio_;
@@ -132,8 +128,7 @@ float RingSrc::IncrementRatio(void *ptr) {
 	if(current_ratio_>(1+threshold_))
 		current_ratio_ = 1+threshold_;
 
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
-	Player *player = (Player *)data->player_;
+	Player *player = static_cast<Player *>(ptr);
 	player->SetPlaybackSpeed(current_ratio_);
 
 	return current_ratio_;
@@ -160,7 +155,7 @@ size_t RingSrc::ParseThreshold(float percent) {
 }
 
 void RingSrc::ProcessThreshold(void *ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
+	Player *player = static_cast<Player *>(ptr);
 
 	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", ring_buffer_->DataStored(), (HOW_MANY*BUFF_SIZE*MULTIPLIER), ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
 
@@ -170,7 +165,7 @@ void RingSrc::ProcessThreshold(void *ptr) {
 		return;
 	}
 
-	if(data->ready_) {
+	if(player->ready_) {
 		float ratio;
 
 		if(ring_buffer_->DataStored()<ParseThreshold(0.5-threshold_)) {

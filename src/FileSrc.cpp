@@ -15,9 +15,9 @@ FileSrc::~FileSrc() {
 }
 
 void FileSrc::InitSrc(void *ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
+	Player *player = static_cast<Player *>(ptr);
 
-	g_object_set(data->src_, "location", path_, NULL);
+	g_object_set(player->src_, "location", path_, NULL);
 }
 
 const char *FileSrc::GetName() {

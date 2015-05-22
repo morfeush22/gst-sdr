@@ -9,7 +9,7 @@
 #include "Player.h"
 
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)((AbstractSinkHelpers::Data *)ptr)->other_data_;
+	Player *player = (Player *)((AbstractSinkHelpers::Data *)ptr)->other_data_;
 	PulseSink *sink = (PulseSink *)((AbstractSinkHelpers::Data *)ptr)->sink_;
 
 	GstPad *sinkpad;
@@ -21,8 +21,8 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_pad_unlink(sink->teepad_, sinkpad);
 	gst_object_unref(sinkpad);
 
-	gst_bin_remove(GST_BIN(data->pipeline_), sink->queue_);
-	gst_bin_remove(GST_BIN(data->pipeline_), sink->sink_);
+	gst_bin_remove(GST_BIN(player->pipeline_), sink->queue_);
+	gst_bin_remove(GST_BIN(player->pipeline_), sink->sink_);
 
 	gst_element_set_state(sink->sink_, GST_STATE_NULL);
 	gst_element_set_state(sink->queue_, GST_STATE_NULL);
@@ -30,7 +30,7 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_object_unref(sink->sink_);
 	gst_object_unref(sink->queue_);
 
-	gst_element_release_request_pad(data->tee_, sink->teepad_);
+	gst_element_release_request_pad(player->tee_, sink->teepad_);
 	gst_object_unref(sink->teepad_);
 
 	return GST_PAD_PROBE_REMOVE;
@@ -47,13 +47,13 @@ PulseSink::~PulseSink() {
 }
 
 void PulseSink::InitSink(void *ptr) {
-	PlayerHelpers::Data *data = static_cast<PlayerHelpers::Data *>(ptr);
+	Player *player = static_cast<Player *>(ptr);
 
 	GstPad *sinkpad;
 	GstPadTemplate *templ;
 
-	templ = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(data->tee_), "src_%u");
-	teepad_ = gst_element_request_pad(data->tee_, templ, NULL, NULL);
+	templ = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(player->tee_), "src_%u");
+	teepad_ = gst_element_request_pad(player->tee_, templ, NULL, NULL);
 
 	char buff[100];
 
@@ -71,7 +71,7 @@ void PulseSink::InitSink(void *ptr) {
 
 	removing_ = false;
 
-	gst_bin_add_many(GST_BIN(data->pipeline_),
+	gst_bin_add_many(GST_BIN(player->pipeline_),
 			queue_,
 			sink_,
 			NULL);
