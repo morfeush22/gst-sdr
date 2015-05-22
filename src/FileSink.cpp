@@ -17,15 +17,17 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	if(!g_atomic_int_compare_and_exchange(&sink->removing_, FALSE, TRUE))
 		return GST_PAD_PROBE_OK;
 
+	//g_print("before unref... %d\n", sink->removing_);
+
 	sinkpad = gst_element_get_static_pad(sink->queue_, "sink");
 	gst_pad_unlink(sink->teepad_, sinkpad);
 	gst_object_unref(sinkpad);
 
-	gst_bin_remove(GST_BIN(player->pipeline_), sink->queue_);
-	gst_bin_remove(GST_BIN(player->pipeline_), sink->sink_);
-
 	gst_element_set_state(sink->sink_, GST_STATE_NULL);
 	gst_element_set_state(sink->queue_, GST_STATE_NULL);
+
+	gst_bin_remove(GST_BIN(player->pipeline_), sink->queue_);
+	gst_bin_remove(GST_BIN(player->pipeline_), sink->sink_);
 
 	gst_object_unref(sink->sink_);
 	gst_object_unref(sink->queue_);
@@ -70,7 +72,12 @@ void FileSink::InitSink(void *ptr) {
 	sink_ = gst_element_factory_make(GetName(), buff);
 	g_assert(sink_);
 
+	g_object_set(sink_, "location", path_, NULL);
+
 	removing_ = false;
+
+	gst_object_ref(queue_);
+	gst_object_ref(sink_);
 
 	gst_bin_add_many(GST_BIN(player->pipeline_),
 			queue_,
@@ -89,8 +96,6 @@ void FileSink::InitSink(void *ptr) {
 	sinkpad = gst_element_get_static_pad(queue_, "sink");
 	gst_pad_link(teepad_, sinkpad);
 	gst_object_unref(sinkpad);
-
-	g_object_set(sink_, "location", path_, NULL);
 }
 
 const char* FileSink::GetName() const {
@@ -103,6 +108,7 @@ void FileSink::FinishEarly(void *ptr) {
 	data.sink_ = this;
 	data.other_data_ = ptr;
 
-	gst_pad_add_probe(teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data, (GDestroyNotify)g_free);
+	//gst_pad_add_probe(teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data, (GDestroyNotify)g_free);
+	gst_pad_add_probe(teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data, NULL);
 }
 

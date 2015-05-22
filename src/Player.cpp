@@ -176,7 +176,7 @@ const uint32_t Player::GetSampleRate() const {
 AbstractSink *Player::AddSink(AbstractSink *sink) {
 	sink->InitSink(static_cast<void *>(this));
 	abstract_sinks_.push_back(sink);
-	//g_print("%d\n", sinks_.size());
+	//g_print("%d\n", abstract_sinks_.size());
 	return sink;
 }
 
@@ -184,6 +184,7 @@ void Player::RemoveSink(AbstractSink *sink) {
 	std::list<AbstractSink *>::iterator it;
 	it = abstract_sinks_.begin();
 	while(it != abstract_sinks_.end()) {
+		//printf("before finish early\n");
 		if(*(*it) == *sink) {
 			AbstractSink *s = *it;
 			s->FinishEarly(this);
@@ -194,6 +195,7 @@ void Player::RemoveSink(AbstractSink *sink) {
 				gst_element_set_state(pipeline_, GST_STATE_NULL);
 			return;
 		}
+		it++;
 	}
 }
 
