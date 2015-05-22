@@ -11,14 +11,17 @@
 using namespace std;
 
 int main() {
-	RingSrc *src = new RingSrc("./player_unittest_file.aac", 0.2);
+	//RingSrc *src = new RingSrc("./player_unittest_file.aac", 0.2);
 
+	//PulseSink *sink = new PulseSink();
+	//FileSink *file_sink = new FileSink("./test.raw");
+	FileSrc *src = new FileSrc("./player_unittest_file.aac");
 	PulseSink *sink = new PulseSink();
-	FileSink *file_sink = new FileSink("./test.raw");
 
 	Player player(src, 44100);
 	player.AddSink(sink);
-	player.AddSink(file_sink);
+
+	//player.AddSink(file_sink);
 	//player.RemoveSink(sink);
 	//player.RemoveSink(file_sink);
 	player.Process();

@@ -9,6 +9,7 @@
 #define SRC_FAKESINK_H_
 
 #include "AbstractSink.h"
+#include <gst/gst.h>
 
 #include <stdint.h>
 
@@ -21,7 +22,14 @@ public:
 	void AddBytes(uint32_t);
 
 	void InitSink(void *);
-	const char *GetName();
+	const char *GetName() const;
+	void FinishEarly(void *);
+
+	GstElement *queue_;
+	GstElement *sink_;
+	GstPad *teepad_;
+
+	gboolean removing_;
 
 private:
 	uint32_t bytes_returned_;

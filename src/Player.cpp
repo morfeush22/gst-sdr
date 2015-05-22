@@ -186,7 +186,7 @@ void Player::RemoveSink(AbstractSink *sink) {
 	while(it != abstract_sinks_.end()) {
 		if(*(*it) == *sink) {
 			AbstractSink *s = *it;
-			s->Finish(this);
+			s->FinishEarly(this);
 			abstract_sinks_.erase(it);
 			//printf("%s\n", s->GetName());
 			//printf("%d\n", sinks_.size());

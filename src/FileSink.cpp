@@ -97,7 +97,7 @@ const char* FileSink::GetName() const {
 	return "filesink";
 }
 
-void FileSink::Finish(void *ptr) {
+void FileSink::FinishEarly(void *ptr) {
 	AbstractSinkHelpers::Data data;
 
 	data.sink_ = this;

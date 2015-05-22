@@ -15,7 +15,7 @@ public:
 
 	virtual void InitSink(void *data) = 0;
 	virtual const char *GetName() const = 0;
-	virtual void Finish(void *data) = 0;
+	virtual void FinishEarly(void *data) = 0;
 
 	bool operator ==(const AbstractSink &other) const;
 

@@ -94,7 +94,7 @@ const char* PulseSink::GetName() const {
 	return "pulsesink";
 }
 
-void PulseSink::Finish(void *ptr) {
+void PulseSink::FinishEarly(void *ptr) {
 	AbstractSinkHelpers::Data data;
 
 	data.sink_ = this;

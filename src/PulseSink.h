@@ -18,7 +18,7 @@ public:
 
 	void InitSink(void *);
 	const char *GetName() const;
-	void Finish(void *);
+	void FinishEarly(void *);
 
 	GstElement *queue_;
 	GstElement *sink_;

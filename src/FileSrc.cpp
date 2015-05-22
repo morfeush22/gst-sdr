@@ -17,6 +17,9 @@ FileSrc::~FileSrc() {
 void FileSrc::InitSrc(void *ptr) {
 	Player *player = static_cast<Player *>(ptr);
 
+	player->src_ = gst_element_factory_make(GetName(), "src");
+	g_assert(player->src_);
+
 	g_object_set(player->src_, "location", path_, NULL);
 }
 

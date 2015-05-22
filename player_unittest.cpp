@@ -22,7 +22,8 @@ TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 	FileSrc *src = new FileSrc("./player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
-	Player player(src, sink, 44100);
+	Player player(src, 44100);
+	player.AddSink(sink);
 	player.Process();
 
 	EXPECT_EQ(size, sink->GetBytesReturned());
@@ -38,7 +39,8 @@ TEST(PlayerTestTagsTest, tags_returned) {
 	FileSrc *src = new FileSrc("./player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
-	Player player(src, sink, 44100);
+	Player player(src, 44100);
+	player.AddSink(sink);
 	player.Process();
 
 	std::map<const char *, char *, PlayerHelpers::CmpStr>::iterator it;
