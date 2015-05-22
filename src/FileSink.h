@@ -20,11 +20,15 @@ public:
 	const char *GetName() const;
 	void Finish(void *);
 
+	GstElement *queue_;
+	GstElement *sink_;
+	GstPad *teepad_;
+
+	gboolean removing_;
+
 private:
 	const char *path_;
 
-	GstElement *queue_;
-	GstElement *sink_;
 };
 
 #endif /* SRC_FILESINK_H_ */

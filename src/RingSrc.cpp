@@ -10,6 +10,7 @@
 #include <gst/app/app.h>
 
 #include <fstream>
+#include <unistd.h>
 
 #define RESOLUTION 0.001
 
@@ -146,6 +147,10 @@ size_t RingSrc::ReadFromFile() {
 	const char *const *ptr = file_wrapper_->GetCurrentChunkPointer();
 
 	uint32_t returned = file_wrapper_->GetNextChunk();
+
+	//g_print("sleeping...\n");
+	//sleep(3);
+	//g_print("wakeing...\n");
 
 	return ring_buffer_->sWriteInto(const_cast<char *>(*ptr), returned);
 }

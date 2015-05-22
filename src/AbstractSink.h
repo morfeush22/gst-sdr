@@ -21,4 +21,13 @@ public:
 
 };
 
+namespace AbstractSinkHelpers {
+
+struct Data {
+	AbstractSink *sink_;
+	void *other_data_;
+};
+
+}
+
 #endif /* SRC_ABSTRACTSINK_H_ */

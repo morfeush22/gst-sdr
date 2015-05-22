@@ -106,6 +106,10 @@ Player::~Player() {
 }
 
 void Player::Process() {
+	if(!sinks_.size()) {
+		g_print("GStreamer: no sinks\n");
+		return;
+	}
 	gst_element_set_state((GstElement*)data_.pipeline_, GST_STATE_PLAYING);
 	data_.loop_ = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(data_.loop_);
@@ -188,6 +192,8 @@ void Player::RemoveSink(AbstractSink *sink) {
 			sinks_.erase(it);
 			//printf("%s\n", s->GetName());
 			//printf("%d\n", sinks_.size());
+			if(!sinks_.size())
+				gst_element_set_state(data_.pipeline_, GST_STATE_NULL);
 			return;
 		}
 	}

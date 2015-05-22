@@ -19,8 +19,8 @@ int main() {
 	Player player(src, 44100);
 	player.AddSink(sink);
 	player.AddSink(file_sink);
-	player.RemoveSink(sink);
-	player.RemoveSink(file_sink);
+	//player.RemoveSink(sink);
+	//player.RemoveSink(file_sink);
 	player.Process();
 
 	delete sink;

@@ -20,9 +20,12 @@ public:
 	const char *GetName() const;
 	void Finish(void *);
 
-private:
 	GstElement *queue_;
 	GstElement *sink_;
+	GstPad *teepad_;
+
+	gboolean removing_;
+
 };
 
 #endif /* SRC_PULSESINK_H_ */
