@@ -7,6 +7,7 @@
 
 #include "RingSrc.h"
 #include "Player.h"
+
 #include <gst/app/app.h>
 
 #include <fstream>
@@ -20,13 +21,13 @@
 #define HOW_MANY 1
 #define FILE_CHUNKS 0.5
 
-#define APP_SRC_BUFF_SIZE 1000*25	//25kB
+#define APP_SRC_BUFF_SIZE 1000*25	//25kB, size of internal appsrc buffer
 
 RingSrc::RingSrc(const char *path, float threshold):
 source_id_(0),
 threshold_(threshold),
-path_(path),
-current_ratio_(1.0) {
+current_ratio_(1.0),
+path_(path) {
 	file_wrapper_ = new FileWrapper(path_, FILE_CHUNKS*BUFF_SIZE*MULTIPLIER);	//500kB
 	ring_buffer_ = new RingBuffer<char>(HOW_MANY*BUFF_SIZE*MULTIPLIER);	//100kB
 }
@@ -78,25 +79,19 @@ static gboolean ReadData(gpointer *ptr) {
 static void StartFeed(GstElement *pipeline, guint size, gpointer *ptr) {
 	Player *player = (Player *)ptr;
 	RingSrc *src = (RingSrc *)player->GetSrc();
-	guint *source_id = src->GetSourceId();
 
-	//g_print("start feed... %lu\n", src->GetRingBuffer()->DataStored());
-
-	if (*source_id == 0) {
-		*source_id = g_idle_add((GSourceFunc)ReadData, ptr);
+	if(src->source_id_ == 0) {
+		src->source_id_ = g_idle_add((GSourceFunc)ReadData, player);
 	}
 }
 
 static void StopFeed(GstElement *pipeline, gpointer *ptr) {
 	Player *player = (Player *)ptr;
 	RingSrc *src = (RingSrc *)player->GetSrc();
-	guint *source_id = src->GetSourceId();
 
-	//g_print("stop feed... %lu\n", src->GetRingBuffer()->DataStored());
-
-	if (*source_id != 0) {
-		g_source_remove(*source_id);
-		*source_id = 0;
+	if (src->source_id_ != 0) {
+		g_source_remove(src->source_id_);
+		src->source_id_ = 0;
 	}
 }
 
@@ -134,18 +129,10 @@ float RingSrc::IncrementRatio(void *ptr) {
 	return current_ratio_;
 }
 
-guint *RingSrc::GetSourceId() {
-	return &source_id_;
-}
-
 size_t RingSrc::ReadFromFile() {
 	const char *const *ptr = file_wrapper_->GetCurrentChunkPointer();
 
 	uint32_t returned = file_wrapper_->GetNextChunk();
-
-	//g_print("sleeping...\n");
-	//sleep(3);
-	//g_print("wakeing...\n");
 
 	return ring_buffer_->sWriteInto(const_cast<char *>(*ptr), returned);
 }

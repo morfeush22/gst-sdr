@@ -9,10 +9,12 @@
 #define SRC_RINGSRC_H_
 
 #include "AbstractSrc.h"
-#include <stdint.h>
-#include <gst/gst.h>
 #include "ring_buffer.h"
 #include "file_wrapper.h"	//should not be
+
+#include <gst/gst.h>
+
+#include <stdint.h>
 
 class RingSrc: public AbstractSrc {
 public:
@@ -25,20 +27,25 @@ public:
 	float DecrementRatio(void *);
 	float IncrementRatio(void *);
 
-	guint *GetSourceId();
+	//guint *GetSourceId();
 
 	size_t ReadFromFile();	//should not be in final code
+
 	size_t ParseThreshold(float);
 	void ProcessThreshold(void *ptr);
+
 	RingBuffer<char> *GetRingBuffer();
 
-private:
 	guint source_id_;
-	float threshold_;	//in percent
+
+private:
+	float threshold_;	//relative to 1.0
+	float current_ratio_;
+
+	RingBuffer<char> *ring_buffer_;
+
 	const char *path_;	//should not be in final code
 	FileWrapper *file_wrapper_;	//should not be
-	RingBuffer<char> *ring_buffer_;
-	float current_ratio_;
 
 };
 

@@ -40,13 +40,17 @@ PulseSink::PulseSink():
 queue_(NULL),
 sink_(NULL),
 teepad_(NULL),
-removing_(false) {
+removing_(false),
+linked_(false) {
 }
 
 PulseSink::~PulseSink() {
 }
 
 void PulseSink::InitSink(void *ptr) {
+	if(IsLinked())
+		return;
+
 	Player *player = static_cast<Player *>(ptr);
 
 	GstPad *sinkpad;
@@ -71,6 +75,9 @@ void PulseSink::InitSink(void *ptr) {
 
 	removing_ = false;
 
+	gst_object_ref(queue_);
+	gst_object_ref(sink_);
+
 	gst_bin_add_many(GST_BIN(player->pipeline_),
 			queue_,
 			sink_,
@@ -88,6 +95,8 @@ void PulseSink::InitSink(void *ptr) {
 	sinkpad = gst_element_get_static_pad(queue_, "sink");
 	gst_pad_link(teepad_, sinkpad);
 	gst_object_unref(sinkpad);
+
+	linked_ = true;
 }
 
 const char* PulseSink::GetName() const {
@@ -103,3 +112,10 @@ void PulseSink::FinishEarly(void *ptr) {
 	gst_pad_add_probe(teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data, (GDestroyNotify)g_free);
 }
 
+bool PulseSink::IsLinked() const {
+	return linked_;
+}
+
+void PulseSink::UnlinkFinished() {
+	linked_ = false;
+}

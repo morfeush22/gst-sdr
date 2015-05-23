@@ -49,7 +49,8 @@ queue_(NULL),
 sink_(NULL),
 teepad_(NULL),
 removing_(false),
-bytes_returned_(0) {
+bytes_returned_(0),
+linked_(false) {
 }
 
 FakeSink::~FakeSink() {
@@ -60,6 +61,9 @@ uint32_t FakeSink::GetBytesReturned() {
 }
 
 void FakeSink::InitSink(void *ptr) {
+	if(IsLinked())
+		return;
+
 	Player *player = static_cast<Player *>(ptr);
 
 	GstPad *sinkpad;
@@ -82,7 +86,13 @@ void FakeSink::InitSink(void *ptr) {
 	sink_ = gst_element_factory_make(GetName(), buff);
 	g_assert(sink_);
 
+	g_object_set(sink_, "signal-handoffs", TRUE, NULL);
+	g_signal_connect(sink_, "handoff", G_CALLBACK(SinkHandoffCall), this);
+
 	removing_ = false;
+
+	gst_object_ref(queue_);
+	gst_object_ref(sink_);
 
 	gst_bin_add_many(GST_BIN(player->pipeline_),
 			queue_,
@@ -102,9 +112,7 @@ void FakeSink::InitSink(void *ptr) {
 	gst_pad_link(teepad_, sinkpad);
 	gst_object_unref(sinkpad);
 
-	g_object_set(sink_, "signal-handoffs", TRUE, NULL);
-
-	g_signal_connect(sink_, "handoff", G_CALLBACK(SinkHandoffCall), this);
+	linked_ = true;
 }
 
 void FakeSink::AddBytes(uint32_t bytes) {
@@ -122,4 +130,12 @@ void FakeSink::FinishEarly(void *ptr) {
 	data.other_data_ = ptr;
 
 	gst_pad_add_probe(teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data, (GDestroyNotify)g_free);
+}
+
+bool FakeSink::IsLinked() const {
+	return linked_;
+}
+
+void FakeSink::UnlinkFinished() {
+	linked_ = false;
 }

@@ -43,7 +43,7 @@ int main() {
 	PulseSink *sink = new PulseSink();
 	FileSink *new_sink = new FileSink("./test.raw");
 
-	Player player(src, 44100);
+	Player player(src);
 	player.AddSink(sink);
 
 	Data data;

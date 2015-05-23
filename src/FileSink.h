@@ -9,6 +9,7 @@
 #define SRC_FILESINK_H_
 
 #include "AbstractSink.h"
+
 #include <gst/gst.h>
 
 class FileSink: public AbstractSink {
@@ -19,6 +20,8 @@ public:
 	void InitSink(void *);
 	const char *GetName() const;
 	void FinishEarly(void *);
+	bool IsLinked() const;
+	void UnlinkFinished();
 
 	GstElement *queue_;
 	GstElement *sink_;
@@ -26,8 +29,9 @@ public:
 
 	gboolean removing_;
 
-private:
+protected:
 	const char *path_;
+	bool linked_;
 
 };
 

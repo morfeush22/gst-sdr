@@ -92,15 +92,13 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer ptr) {
 	return TRUE;
 }
 
-Player::Player(AbstractSrc *src, uint32_t sample_rate):
-sample_rate_(sample_rate),
+Player::Player(AbstractSrc *src):
 abstract_src_(src) {
 	gst_init (NULL, NULL);
 	Init();
 }
 
 Player::~Player() {
-
 }
 
 void Player::Process() {
@@ -108,9 +106,20 @@ void Player::Process() {
 		g_print("GStreamer: no sinks\n");
 		return;
 	}
+
 	gst_element_set_state((GstElement*)pipeline_, GST_STATE_PLAYING);
 	loop_ = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(loop_);
+
+	gst_element_set_state((GstElement*)pipeline_, GST_STATE_NULL);
+	gst_object_unref(pipeline_);
+
+	std::list<AbstractSink *>::iterator it;
+	it = abstract_sinks_.begin();
+	while(it != abstract_sinks_.end()) {
+		(*it)->UnlinkFinished();
+		it = abstract_sinks_.erase(it);
+	}
 }
 
 void Player::ConstructObjects() {
@@ -169,14 +178,9 @@ std::map<const char*, char*, PlayerHelpers::CmpStr> *Player::GetTagsMap() {
 	return &tags_map_;
 }
 
-const uint32_t Player::GetSampleRate() const {
-	return sample_rate_;
-}
-
 AbstractSink *Player::AddSink(AbstractSink *sink) {
 	sink->InitSink(static_cast<void *>(this));
 	abstract_sinks_.push_back(sink);
-	//g_print("%d\n", abstract_sinks_.size());
 	return sink;
 }
 
@@ -184,13 +188,10 @@ void Player::RemoveSink(AbstractSink *sink) {
 	std::list<AbstractSink *>::iterator it;
 	it = abstract_sinks_.begin();
 	while(it != abstract_sinks_.end()) {
-		//printf("before finish early\n");
-		if(*(*it) == *sink) {
+		if(*it == sink) {
 			AbstractSink *s = *it;
 			s->FinishEarly(this);
 			abstract_sinks_.erase(it);
-			//printf("%s\n", s->GetName());
-			//printf("%d\n", sinks_.size());
 			if(!abstract_sinks_.size())
 				gst_element_set_state(pipeline_, GST_STATE_NULL);
 			return;

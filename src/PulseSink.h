@@ -9,6 +9,7 @@
 #define SRC_PULSESINK_H_
 
 #include "AbstractSink.h"
+
 #include <gst/gst.h>
 
 class PulseSink: public AbstractSink {
@@ -19,12 +20,17 @@ public:
 	void InitSink(void *);
 	const char *GetName() const;
 	void FinishEarly(void *);
+	bool IsLinked() const;
+	void UnlinkFinished();
 
 	GstElement *queue_;
 	GstElement *sink_;
 	GstPad *teepad_;
 
 	gboolean removing_;
+
+private:
+	bool linked_;
 
 };
 

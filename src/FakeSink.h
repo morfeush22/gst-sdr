@@ -9,6 +9,7 @@
 #define SRC_FAKESINK_H_
 
 #include "AbstractSink.h"
+
 #include <gst/gst.h>
 
 #include <stdint.h>
@@ -24,6 +25,8 @@ public:
 	void InitSink(void *);
 	const char *GetName() const;
 	void FinishEarly(void *);
+	bool IsLinked() const;
+	void UnlinkFinished();
 
 	GstElement *queue_;
 	GstElement *sink_;
@@ -33,6 +36,7 @@ public:
 
 private:
 	uint32_t bytes_returned_;
+	bool linked_;
 
 };
 

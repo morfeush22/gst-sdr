@@ -22,7 +22,7 @@ TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 	FileSrc *src = new FileSrc("./player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
-	Player player(src, 44100);
+	Player player(src);
 	player.AddSink(sink);
 	player.Process();
 
@@ -39,7 +39,7 @@ TEST(PlayerTestTagsTest, tags_returned) {
 	FileSrc *src = new FileSrc("./player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
-	Player player(src, 44100);
+	Player player(src);
 	player.AddSink(sink);
 	player.Process();
 
