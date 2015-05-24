@@ -1,12 +1,12 @@
-#include "src/Player.h"
-#include "src/FakeSink.h"
-#include "src/FileSrc.h"
-#include "src/RingSrc.h"
-#include "src/PulseSink.h"
-#include "src/FileSink.h"
 #include "src/ring_buffer.h"
 
 #include <iostream>
+#include "src/fake_sink.h"
+#include "src/file_sink.h"
+#include "src/file_src.h"
+#include "src/player.h"
+#include "src/pulse_sink.h"
+#include "src/ring_src.h"
 
 using namespace std;
 
@@ -39,7 +39,7 @@ static gboolean RemCb(gpointer data) {
 }
 
 int main() {
-	RingSrc *src = new RingSrc("./player_unittest_file.aac", 0.20);
+	RingSrc *src = new RingSrc(0.20);
 	PulseSink *sink = new PulseSink();
 	FileSink *new_sink = new FileSink("./test.raw");
 

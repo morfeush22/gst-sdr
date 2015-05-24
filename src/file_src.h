@@ -1,14 +1,14 @@
 /*
- * FileSrc.h
+ * file_src.h
  *
  *  Created on: May 13, 2015
  *      Author: morfeush22
  */
 
-#ifndef SRC_FILESRC_H_
-#define SRC_FILESRC_H_
+#ifndef SRC_FILE_SRC_H_
+#define SRC_FILE_SRC_H_
 
-#include "AbstractSrc.h"
+#include "abstract_src.h"
 
 class FileSrc: public AbstractSrc {
 public:
@@ -23,4 +23,4 @@ private:
 
 };
 
-#endif /* SRC_FILESRC_H_ */
+#endif /* SRC_FILE_SRC_H_ */

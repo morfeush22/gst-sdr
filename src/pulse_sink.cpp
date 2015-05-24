@@ -1,12 +1,13 @@
 /*
- * PulseSink.cpp
+ * pulse_sink.cpp
  *
  *  Created on: May 13, 2015
  *      Author: morfeush22
  */
 
-#include "PulseSink.h"
-#include "Player.h"
+#include "pulse_sink.h"
+
+#include "player.h"
 
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer ptr) {
 	Player *player = (Player *)((AbstractSinkHelpers::Data *)ptr)->other_data_;
@@ -32,6 +33,8 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 
 	gst_element_release_request_pad(player->tee_, sink->teepad_);
 	gst_object_unref(sink->teepad_);
+
+	sink->UnlinkFinished();
 
 	return GST_PAD_PROBE_REMOVE;
 }

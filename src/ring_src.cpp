@@ -1,39 +1,30 @@
 /*
- * RingSrc.cpp
+ * ring_src.cpp
  *
  *  Created on: May 17, 2015
  *      Author: morfeush22
  */
 
-#include "RingSrc.h"
-#include "Player.h"
+#include "ring_src.h"
 
 #include <gst/app/app.h>
 
 #include <fstream>
 #include <unistd.h>
+#include "player.h"
 
 #define RESOLUTION 0.001
-
-#define BUFF_SIZE 1000	//1kB
-#define MULTIPLIER 100
-
-#define HOW_MANY 1
-#define FILE_CHUNKS 0.5
-
+#define BUFF_SIZE 100000	//100*4kB (float)
 #define APP_SRC_BUFF_SIZE 1000*25	//25kB, size of internal appsrc buffer
 
-RingSrc::RingSrc(const char *path, float threshold):
+RingSrc::RingSrc(float threshold):
 source_id_(0),
 threshold_(threshold),
-current_ratio_(1.0),
-path_(path) {
-	file_wrapper_ = new FileWrapper(path_, FILE_CHUNKS*BUFF_SIZE*MULTIPLIER);	//500kB
-	ring_buffer_ = new RingBuffer<char>(HOW_MANY*BUFF_SIZE*MULTIPLIER);	//100kB
+current_ratio_(1.0) {
+	ring_buffer_ = new BlockingRingBuffer(BUFF_SIZE);
 }
 
 RingSrc::~RingSrc() {
-	delete file_wrapper_;
 	delete ring_buffer_;
 }
 
@@ -45,19 +36,18 @@ static gboolean ReadData(gpointer *ptr) {
 	Player *player = (Player *)ptr;
 	RingSrc *src = (RingSrc *)player->GetSrc();
 
-	src->ProcessThreshold(ptr);
-
 	GstBuffer *buffer;
-	char *it;
-	gint size;
-	GstFlowReturn ret;
 	GstMapInfo map;
+	float *it;
+	gint size;
 
-	buffer = gst_buffer_new_and_alloc(BUFF_SIZE);
+	GstFlowReturn ret;
+
+	buffer = gst_buffer_new_and_alloc(BUFF_SIZE*sizeof(float));
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
-	it = (char *)map.data;
+	it = (float *)map.data;
 
-	size = src->GetRingBuffer()->sReadFrom(it, BUFF_SIZE);
+	size = src->GetRingBuffer()->ReadFrom(it, BUFF_SIZE);
 
 	gst_buffer_unmap(buffer, &map);
 
@@ -71,6 +61,8 @@ static gboolean ReadData(gpointer *ptr) {
 		gst_app_src_end_of_stream((GstAppSrc *)player->src_);
 		return FALSE;
 	}
+
+	src->ProcessThreshold(ptr);
 
 	return TRUE;
 }
@@ -129,28 +121,14 @@ float RingSrc::IncrementRatio(void *ptr) {
 	return current_ratio_;
 }
 
-size_t RingSrc::ReadFromFile() {
-	const char *const *ptr = file_wrapper_->GetCurrentChunkPointer();
-
-	uint32_t returned = file_wrapper_->GetNextChunk();
-
-	return ring_buffer_->sWriteInto(const_cast<char *>(*ptr), returned);
-}
-
-size_t RingSrc::ParseThreshold(float percent) {
-	return size_t(HOW_MANY*BUFF_SIZE*MULTIPLIER)*percent;
+size_t RingSrc::ParseThreshold(float fraction) {
+	return size_t(BUFF_SIZE)*fraction;
 }
 
 void RingSrc::ProcessThreshold(void *ptr) {
 	Player *player = static_cast<Player *>(ptr);
 
-	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", ring_buffer_->DataStored(), (HOW_MANY*BUFF_SIZE*MULTIPLIER), ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
-
-	if(ring_buffer_->DataStored()<ParseThreshold(0.25)) {
-		ReadFromFile();
-		ProcessThreshold(ptr);
-		return;
-	}
+	//g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", ring_buffer_->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
 
 	if(player->ready_) {
 		float ratio;
@@ -169,6 +147,6 @@ void RingSrc::ProcessThreshold(void *ptr) {
 	}
 }
 
-RingBuffer<char> *RingSrc::GetRingBuffer() {
+BlockingRingBuffer *RingSrc::GetRingBuffer() {
 	return ring_buffer_;
 }

@@ -1,16 +1,15 @@
 /*
- * PulseSink.h
+ * pulse_sink.h
  *
  *  Created on: May 13, 2015
  *      Author: morfeush22
  */
 
-#ifndef SRC_PULSESINK_H_
-#define SRC_PULSESINK_H_
-
-#include "AbstractSink.h"
+#ifndef SRC_PULSE_SINK_H_
+#define SRC_PULSE_SINK_H_
 
 #include <gst/gst.h>
+#include "abstract_sink.h"
 
 class PulseSink: public AbstractSink {
 public:
@@ -34,4 +33,4 @@ private:
 
 };
 
-#endif /* SRC_PULSESINK_H_ */
+#endif /* SRC_PULSE_SINK_H_ */

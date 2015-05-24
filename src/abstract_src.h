@@ -1,12 +1,12 @@
 /*
- * AbstractSrc.h
+ * abstract_src.h
  *
  *  Created on: May 13, 2015
  *      Author: morfeush22
  */
 
-#ifndef SRC_ABSTRACTSRC_H_
-#define SRC_ABSTRACTSRC_H_
+#ifndef SRC_ABSTRACT_SRC_H_
+#define SRC_ABSTRACT_SRC_H_
 
 class AbstractSrc {
 public:
@@ -17,4 +17,4 @@ public:
 	virtual const char *GetName() = 0;
 };
 
-#endif /* SRC_ABSTRACTSRC_H_ */
+#endif /* SRC_ABSTRACT_SRC_H_ */

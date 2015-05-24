@@ -1,12 +1,12 @@
 /*
- * AbstractSink.h
+ * abstract_sink.h
  *
  *  Created on: May 13, 2015
  *      Author: morfeush22
  */
 
-#ifndef SRC_ABSTRACTSINK_H_
-#define SRC_ABSTRACTSINK_H_
+#ifndef SRC_ABSTRACT_SINK_H_
+#define SRC_ABSTRACT_SINK_H_
 
 class AbstractSink {
 public:
@@ -32,4 +32,4 @@ struct Data {
 
 }
 
-#endif /* SRC_ABSTRACTSINK_H_ */
+#endif /* SRC_ABSTRACT_SINK_H_ */

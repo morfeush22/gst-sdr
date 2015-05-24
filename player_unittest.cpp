@@ -1,11 +1,11 @@
-#include "gtest/gtest.h"
-#include "src/Player.h"
-#include "src/FakeSink.h"
-#include "src/FileSrc.h"
-#include "src/RingSrc.h"
+#include "src/player.h"
 
+#include "gtest/gtest.h"
 #include <fstream>
 #include <string>
+#include "src/fake_sink.h"
+#include "src/file_src.h"
+#include "src/ring_src.h"
 
 using namespace std;
 

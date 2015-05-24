@@ -1,16 +1,17 @@
 /*
- * FakeSink.cpp
+ * file_sink.cpp
  *
- *  Created on: May 13, 2015
+ *  Created on: May 21, 2015
  *      Author: morfeush22
  */
 
-#include "FakeSink.h"
-#include "Player.h"
+#include "file_sink.h"
+
+#include "player.h"
 
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer ptr) {
 	Player *player = (Player *)((AbstractSinkHelpers::Data *)ptr)->other_data_;
-	FakeSink *sink = (FakeSink *)((AbstractSinkHelpers::Data *)ptr)->sink_;
+	FileSink *sink = (FileSink *)((AbstractSinkHelpers::Data *)ptr)->sink_;
 
 	GstPad *sinkpad;
 
@@ -33,34 +34,24 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_element_release_request_pad(player->tee_, sink->teepad_);
 	gst_object_unref(sink->teepad_);
 
+	sink->UnlinkFinished();
+
 	return GST_PAD_PROBE_REMOVE;
 }
 
-static void SinkHandoffCall(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer ptr) {
-	FakeSink *sink = (FakeSink *)ptr;
-
-	uint32_t size = gst_buffer_get_size(buffer);
-
-	sink->AddBytes(size);
-}
-
-FakeSink::FakeSink():
+FileSink::FileSink(const char *path):
 queue_(NULL),
 sink_(NULL),
 teepad_(NULL),
 removing_(false),
-bytes_returned_(0),
+path_(path),
 linked_(false) {
 }
 
-FakeSink::~FakeSink() {
+FileSink::~FileSink() {
 }
 
-uint32_t FakeSink::GetBytesReturned() {
-	return bytes_returned_;
-}
-
-void FakeSink::InitSink(void *ptr) {
+void FileSink::InitSink(void *ptr) {
 	if(IsLinked())
 		return;
 
@@ -86,8 +77,7 @@ void FakeSink::InitSink(void *ptr) {
 	sink_ = gst_element_factory_make(GetName(), buff);
 	g_assert(sink_);
 
-	g_object_set(sink_, "signal-handoffs", TRUE, NULL);
-	g_signal_connect(sink_, "handoff", G_CALLBACK(SinkHandoffCall), this);
+	g_object_set(sink_, "location", path_, NULL);
 
 	removing_ = false;
 
@@ -115,27 +105,23 @@ void FakeSink::InitSink(void *ptr) {
 	linked_ = true;
 }
 
-void FakeSink::AddBytes(uint32_t bytes) {
-	bytes_returned_ += bytes;
+const char* FileSink::GetName() const {
+	return "filesink";
 }
 
-const char *FakeSink::GetName() const {
-	return "fakesink";
-}
-
-void FakeSink::FinishEarly(void *ptr) {
+void FileSink::FinishEarly(void *ptr) {
 	AbstractSinkHelpers::Data data;
 
 	data.sink_ = this;
 	data.other_data_ = ptr;
 
-	gst_pad_add_probe(teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data, (GDestroyNotify)g_free);
+	gst_pad_add_probe(teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data, NULL);
 }
 
-bool FakeSink::IsLinked() const {
+bool FileSink::IsLinked() const {
 	return linked_;
 }
 
-void FakeSink::UnlinkFinished() {
+void FileSink::UnlinkFinished() {
 	linked_ = false;
 }

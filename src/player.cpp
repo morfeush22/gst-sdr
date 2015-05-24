@@ -1,11 +1,12 @@
 /*
- * Player.cpp
+ * player.cpp
  *
  *  Created on: May 13, 2015
  *      Author: morfeush22
  */
 
-#include "Player.h"
+#include "player.h"
+
 #include <stdio.h>
 
 static void SaveTags(const GstTagList *list, const gchar *tag, gpointer ptr) {

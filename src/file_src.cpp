@@ -1,12 +1,13 @@
 /*
- * FileSrc.cpp
+ * file_src.cpp
  *
  *  Created on: May 13, 2015
  *      Author: morfeush22
  */
 
-#include "FileSrc.h"
-#include "Player.h"
+#include "file_src.h"
+
+#include "player.h"
 
 FileSrc::FileSrc(const char *path): path_(path) {
 }

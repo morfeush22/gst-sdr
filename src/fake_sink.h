@@ -1,18 +1,17 @@
 /*
- * FakeSink.h
+ * fake_sink.h
  *
  *  Created on: May 13, 2015
  *      Author: morfeush22
  */
 
-#ifndef SRC_FAKESINK_H_
-#define SRC_FAKESINK_H_
-
-#include "AbstractSink.h"
+#ifndef SRC_FAKE_SINK_H_
+#define SRC_FAKE_SINK_H_
 
 #include <gst/gst.h>
 
 #include <stdint.h>
+#include "abstract_sink.h"
 
 class FakeSink: public AbstractSink {
 public:
@@ -40,4 +39,4 @@ private:
 
 };
 
-#endif /* SRC_FAKESINK_H_ */
+#endif /* SRC_FAKE_SINK_H_ */

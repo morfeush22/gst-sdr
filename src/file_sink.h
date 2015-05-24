@@ -1,16 +1,15 @@
 /*
- * FileSink.h
+ * file_sink.h
  *
  *  Created on: May 21, 2015
  *      Author: morfeush22
  */
 
-#ifndef SRC_FILESINK_H_
-#define SRC_FILESINK_H_
-
-#include "AbstractSink.h"
+#ifndef SRC_FILE_SINK_H_
+#define SRC_FILE_SINK_H_
 
 #include <gst/gst.h>
+#include "abstract_sink.h"
 
 class FileSink: public AbstractSink {
 public:
@@ -35,4 +34,4 @@ protected:
 
 };
 
-#endif /* SRC_FILESINK_H_ */
+#endif /* SRC_FILE_SINK_H_ */
