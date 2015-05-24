@@ -1,12 +1,12 @@
 #include "src/ring_buffer.h"
-
-#include <iostream>
 #include "src/fake_sink.h"
 #include "src/file_sink.h"
 #include "src/file_src.h"
 #include "src/player.h"
 #include "src/pulse_sink.h"
 #include "src/ring_src.h"
+
+#include <iostream>
 
 using namespace std;
 

@@ -8,8 +8,9 @@
 #ifndef SRC_FILE_SINK_H_
 #define SRC_FILE_SINK_H_
 
-#include <gst/gst.h>
 #include "abstract_sink.h"
+
+#include <gst/gst.h>
 
 class FileSink: public AbstractSink {
 public:

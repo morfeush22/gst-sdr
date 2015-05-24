@@ -8,14 +8,15 @@
 #ifndef SRC_PLAYER_H_
 #define SRC_PLAYER_H_
 
+#include "abstract_sink.h"
+#include "abstract_src.h"
+
 #include <gst/gst.h>
 
 #include <stdint.h>
 #include <string.h>
 #include <map>
 #include <list>
-#include "abstract_sink.h"
-#include "abstract_src.h"
 
 namespace PlayerHelpers {
 

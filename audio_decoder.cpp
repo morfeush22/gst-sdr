@@ -26,10 +26,14 @@ void AudioDecoder::RemoveSink(AbstractSink *sink) {
 	player_->RemoveSink(sink);
 }
 
-AbstractSink* AudioDecoder::AddSink(AbstractSink *sink) {
+AbstractSink *AudioDecoder::AddSink(AbstractSink *sink) {
 	return player_->AddSink(sink);
 }
 
 void AudioDecoder::Write(float *buffer, size_t length) {
 	src_->GetRingBuffer()->WriteInto(buffer, length);
+}
+
+void AudioDecoder::LastFrame() {
+	src_->GetRingBuffer()->LastFrame();
 }

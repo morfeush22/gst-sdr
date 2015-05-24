@@ -6,7 +6,6 @@
  */
 
 #include "fake_sink.h"
-
 #include "player.h"
 
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer ptr) {

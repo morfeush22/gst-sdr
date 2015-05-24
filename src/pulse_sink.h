@@ -8,8 +8,9 @@
 #ifndef SRC_PULSE_SINK_H_
 #define SRC_PULSE_SINK_H_
 
-#include <gst/gst.h>
 #include "abstract_sink.h"
+
+#include <gst/gst.h>
 
 class PulseSink: public AbstractSink {
 public:

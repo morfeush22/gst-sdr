@@ -8,10 +8,12 @@
 #ifndef SRC_FAKE_SINK_H_
 #define SRC_FAKE_SINK_H_
 
+#include "abstract_sink.h"
+
 #include <gst/gst.h>
 
 #include <stdint.h>
-#include "abstract_sink.h"
+
 
 class FakeSink: public AbstractSink {
 public:

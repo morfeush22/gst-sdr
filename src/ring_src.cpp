@@ -6,12 +6,12 @@
  */
 
 #include "ring_src.h"
+#include "player.h"
 
 #include <gst/app/app.h>
 
 #include <fstream>
 #include <unistd.h>
-#include "player.h"
 
 #define RESOLUTION 0.001
 #define BUFF_SIZE 100000	//100*4kB (float)
@@ -128,7 +128,7 @@ size_t RingSrc::ParseThreshold(float fraction) {
 void RingSrc::ProcessThreshold(void *ptr) {
 	Player *player = static_cast<Player *>(ptr);
 
-	//g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", ring_buffer_->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
+	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", ring_buffer_->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
 
 	if(player->ready_) {
 		float ratio;

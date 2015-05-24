@@ -22,6 +22,7 @@ public:
 	AbstractSink *AddSink(AbstractSink *);
 
 	void Write(float *, size_t);
+	void LastFrame();
 
 private:
 	RingSrc *src_;

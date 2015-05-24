@@ -6,7 +6,6 @@
  */
 
 #include "file_sink.h"
-
 #include "player.h"
 
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer ptr) {
@@ -105,7 +104,7 @@ void FileSink::InitSink(void *ptr) {
 	linked_ = true;
 }
 
-const char* FileSink::GetName() const {
+const char *FileSink::GetName() const {
 	return "filesink";
 }
 

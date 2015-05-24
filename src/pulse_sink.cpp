@@ -6,7 +6,6 @@
  */
 
 #include "pulse_sink.h"
-
 #include "player.h"
 
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer ptr) {
@@ -102,7 +101,7 @@ void PulseSink::InitSink(void *ptr) {
 	linked_ = true;
 }
 
-const char* PulseSink::GetName() const {
+const char *PulseSink::GetName() const {
 	return "pulsesink";
 }
 

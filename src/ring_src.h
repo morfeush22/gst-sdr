@@ -8,11 +8,12 @@
 #ifndef SRC_RING_SRC_H_
 #define SRC_RING_SRC_H_
 
+#include "abstract_src.h"
+#include "blocking_ring_buffer.h"
+
 #include <gst/gst.h>
 
 #include <stdint.h>
-#include "abstract_src.h"
-#include "blocking_ring_buffer.h"
 
 class RingSrc: public AbstractSrc {
 public:

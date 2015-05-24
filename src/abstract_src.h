@@ -15,6 +15,7 @@ public:
 
 	virtual void InitSrc(void *data) = 0;
 	virtual const char *GetName() = 0;
+
 };
 
 #endif /* SRC_ABSTRACT_SRC_H_ */
