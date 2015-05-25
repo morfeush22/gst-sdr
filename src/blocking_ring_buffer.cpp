@@ -15,8 +15,8 @@ last_frame_(false) {
 }
 
 BlockingRingBuffer::~BlockingRingBuffer() {
-	pthread_mutex_destroy(&count_mutex_);
 	pthread_cond_destroy(&count_condition_not_empty_);
+	pthread_mutex_destroy(&count_mutex_);
 }
 
 size_t BlockingRingBuffer::ReadFrom(float *dest_buffer, size_t number_to_write) {

@@ -15,6 +15,18 @@
 
 #include <stdint.h>
 
+namespace RingSrcHelpers {
+
+struct Data {
+	void *abstract_src_;
+
+	BlockingRingBuffer *ring_buffer_;
+
+	guint source_id_;
+};
+
+}
+
 class RingSrc: public AbstractSrc {
 public:
 	RingSrc(float threshold);
@@ -27,17 +39,16 @@ public:
 	float IncrementRatio(void *);
 
 	size_t ParseThreshold(float);
-	void ProcessThreshold(void *ptr);
+	void ProcessThreshold(AbstractSrcHelpers::Data *);
 
-	BlockingRingBuffer *GetRingBuffer();
-
-	guint source_id_;
+	void Write(float *, size_t);
+	void LastFrame();
 
 private:
+	RingSrcHelpers::Data data_;
+
 	float threshold_;	//relative to 1.0
 	float current_ratio_;
-
-	BlockingRingBuffer *ring_buffer_;
 
 };
 

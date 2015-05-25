@@ -8,9 +8,10 @@
 #include "fake_sink.h"
 #include "player.h"
 
-static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)((AbstractSinkHelpers::Data *)ptr)->other_data_;
-	FakeSinkHelpers::Data *sink_data = (FakeSinkHelpers::Data *)((AbstractSinkHelpers::Data *)ptr)->sink_data_;
+static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+	AbstractSinkHelpers::Data *container = (AbstractSinkHelpers::Data *)container_ptr;
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)container->other_data_;
+	FakeSinkHelpers::Data *sink_data = (FakeSinkHelpers::Data *)container->sink_data_;
 
 	GstPad *sinkpad;
 
@@ -33,13 +34,13 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_element_release_request_pad(data->tee_, sink_data->teepad_);
 	gst_object_unref(sink_data->teepad_);
 
-	((FakeSink *)sink_data->abstract_sink_)->Finish((AbstractSinkHelpers::Data *)ptr);
+	((FakeSink *)sink_data->abstract_sink_)->Finish(container);
 
 	return GST_PAD_PROBE_REMOVE;
 }
 
-static void SinkHandoffCall(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer ptr) {
-	FakeSink *sink = (FakeSink *)ptr;
+static void SinkHandoffCall(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer sink_ptr) {
+	FakeSink *sink = (FakeSink *)sink_ptr;
 
 	uint32_t size = gst_buffer_get_size(buffer);
 
@@ -49,7 +50,7 @@ static void SinkHandoffCall(GstElement *fakesink, GstBuffer *buffer, GstPad *pad
 FakeSink::FakeSink():
 bytes_returned_(0),
 linked_(false) {
-	data_.removing_ = FALSE;
+	data_.abstract_sink_ = this;
 }
 
 FakeSink::~FakeSink() {

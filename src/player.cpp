@@ -9,8 +9,8 @@
 
 #include <stdio.h>
 
-static void SaveTags(const GstTagList *list, const gchar *tag, gpointer ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
+static void SaveTags(const GstTagList *list, const gchar *tag, gpointer data_ptr) {
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)data_ptr;
 	std::map<const char *, char *, PlayerHelpers::CmpStr>::iterator it;
 
 	gint count = gst_tag_list_get_tag_size(list, tag);
@@ -35,8 +35,8 @@ static void SaveTags(const GstTagList *list, const gchar *tag, gpointer ptr) {
 	}
 }
 
-static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr;
+static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)data_ptr;
 
 	switch(GST_MESSAGE_TYPE(message)) {
 
@@ -76,7 +76,7 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer ptr) {
 
 		gst_message_parse_tag(message, &tags);
 
-		gst_tag_list_foreach(tags, SaveTags, data->player_);
+		gst_tag_list_foreach(tags, SaveTags, data);
 
 		gst_tag_list_free (tags);
 		break;
@@ -96,6 +96,7 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer ptr) {
 Player::Player(AbstractSrc *src):
 abstract_src_(src) {
 	gst_init (NULL, NULL);
+	data_.ready_ = FALSE;
 	Init();
 }
 
@@ -127,6 +128,8 @@ void Player::Process() {
 		(*it)->Finish(data);
 		it = abstract_sinks_.erase(it);
 	}
+
+	data_.ready_ = FALSE;
 }
 
 void Player::ConstructObjects() {
@@ -155,8 +158,8 @@ void Player::SetPropeties() {
 
 	AbstractSrcHelpers::Data data;
 
-	data.other_data_ = &data_;
 	data.src_data_ = NULL;
+	data.other_data_ = &data_;
 
 	abstract_src_->InitSrc(&data);
 
@@ -171,7 +174,7 @@ void Player::SetPropeties() {
 			NULL);	//add elements to bin
 
 	bus = gst_element_get_bus(data_.pipeline_);
-	gst_bus_add_watch(bus, BusCall, this);
+	gst_bus_add_watch(bus, BusCall, &data_);
 
 	SetTagsFilters();
 
@@ -212,6 +215,7 @@ void Player::RemoveSink(AbstractSink *sink) {
 
 			s->Finish(data);
 			abstract_sinks_.erase(it);
+
 			if(!abstract_sinks_.size())
 				gst_element_set_state(data_.pipeline_, GST_STATE_NULL);
 			return;

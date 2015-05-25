@@ -8,9 +8,10 @@
 #include "file_sink.h"
 #include "player.h"
 
-static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)((AbstractSinkHelpers::Data *)ptr)->other_data_;
-	FileSinkHelpers::Data *sink_data = (FileSinkHelpers::Data *)((AbstractSinkHelpers::Data *)ptr)->sink_data_;
+static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+	AbstractSinkHelpers::Data *container = (AbstractSinkHelpers::Data *)container_ptr;
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)container->other_data_;
+	FileSinkHelpers::Data *sink_data = (FileSinkHelpers::Data *)container->sink_data_;
 
 	GstPad *sinkpad;
 
@@ -33,7 +34,7 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_element_release_request_pad(data->tee_, sink_data->teepad_);
 	gst_object_unref(sink_data->teepad_);
 
-	((FileSink *)sink_data->abstract_sink_)->Finish((AbstractSinkHelpers::Data *)ptr);
+	((FileSink *)sink_data->abstract_sink_)->Finish(container);
 
 	return GST_PAD_PROBE_REMOVE;
 }
@@ -41,7 +42,7 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 FileSink::FileSink(const char *path):
 path_(path),
 linked_(false) {
-	data_.removing_ = FALSE;
+	data_.abstract_sink_ = this;
 }
 
 FileSink::~FileSink() {

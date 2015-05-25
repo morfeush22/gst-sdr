@@ -13,10 +13,10 @@
 
 #include <gst/gst.h>
 
+#include <list>
+#include <map>
 #include <stdint.h>
 #include <string.h>
-#include <map>
-#include <list>
 
 namespace PlayerHelpers {
 

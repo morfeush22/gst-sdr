@@ -15,8 +15,8 @@ FileSrc::FileSrc(const char *path): path_(path) {
 FileSrc::~FileSrc() {
 }
 
-void FileSrc::InitSrc(void *ptr) {
-	PlayerHelpers::Data *data = static_cast<PlayerHelpers::Data *>(ptr);
+void FileSrc::InitSrc(AbstractSrcHelpers::Data *ptr) {
+	PlayerHelpers::Data *data = static_cast<PlayerHelpers::Data *>(ptr->other_data_);
 
 	data->src_ = gst_element_factory_make(GetName(), "src");
 	g_assert(data->src_);

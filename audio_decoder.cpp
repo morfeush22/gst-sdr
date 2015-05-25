@@ -31,9 +31,9 @@ AbstractSink *AudioDecoder::AddSink(AbstractSink *sink) {
 }
 
 void AudioDecoder::Write(float *buffer, size_t length) {
-	src_->GetRingBuffer()->WriteInto(buffer, length);
+	src_->Write(buffer, length);
 }
 
 void AudioDecoder::LastFrame() {
-	src_->GetRingBuffer()->LastFrame();
+	src_->LastFrame();
 }
