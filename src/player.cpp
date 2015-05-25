@@ -6,17 +6,16 @@
  */
 
 #include "player.h"
-
 #include <stdio.h>
 
 static void SaveTags(const GstTagList *list, const gchar *tag, gpointer data_ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)data_ptr;
+	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_ptr);
 	std::map<const char *, char *, PlayerHelpers::CmpStr>::iterator it;
 
 	gint count = gst_tag_list_get_tag_size(list, tag);
 
 	for(gint i = 0; i < count; i++) {
-		if((it = data->tags_map_.find(gst_tag_get_nick(tag))) != data->tags_map_.end()) {
+		if((it = data->tags_map_->find(gst_tag_get_nick(tag))) != data->tags_map_->end()) {
 			if(gst_tag_get_type(tag) == G_TYPE_STRING)
 				gst_tag_list_get_string_index(list, tag, i, &it->second);
 			else {
@@ -36,7 +35,7 @@ static void SaveTags(const GstTagList *list, const gchar *tag, gpointer data_ptr
 }
 
 static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)data_ptr;
+	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_ptr);
 
 	switch(GST_MESSAGE_TYPE(message)) {
 
@@ -78,7 +77,7 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 
 		gst_tag_list_foreach(tags, SaveTags, data);
 
-		gst_tag_list_free (tags);
+		gst_tag_list_free(tags);
 		break;
 	}
 
@@ -96,11 +95,13 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 Player::Player(AbstractSrc *src):
 abstract_src_(src) {
 	gst_init (NULL, NULL);
+	data_.tags_map_ = new std::map<const char *, char *, PlayerHelpers::CmpStr>;
 	data_.ready_ = FALSE;
 	Init();
 }
 
 Player::~Player() {
+	delete data_.tags_map_;
 }
 
 void Player::Process() {
@@ -122,7 +123,7 @@ void Player::Process() {
 	while(it != abstract_sinks_.end()) {
 		AbstractSinkHelpers::Data *data = g_new0(AbstractSinkHelpers::Data, 1);
 
-		data->sink_data_ = *(it);
+		data->sink_data_ = NULL;
 		data->other_data_ = &data_;
 
 		(*it)->Finish(data);
@@ -182,11 +183,11 @@ void Player::SetPropeties() {
 }
 
 void Player::SetTagsFilters() {
-	data_.tags_map_[GST_TAG_TITLE] = NULL;
-	data_.tags_map_[GST_TAG_ARTIST] = NULL;
-	data_.tags_map_[GST_TAG_ALBUM] = NULL;
-	data_.tags_map_[GST_TAG_GENRE] = NULL;
-	data_.tags_map_[GST_TAG_DATE_TIME] = NULL;
+	(*data_.tags_map_)[GST_TAG_TITLE] = NULL;
+	(*data_.tags_map_)[GST_TAG_ARTIST] = NULL;
+	(*data_.tags_map_)[GST_TAG_ALBUM] = NULL;
+	(*data_.tags_map_)[GST_TAG_GENRE] = NULL;
+	(*data_.tags_map_)[GST_TAG_DATE_TIME] = NULL;
 }
 
 AbstractSink *Player::AddSink(AbstractSink *sink) {
@@ -210,7 +211,7 @@ void Player::RemoveSink(AbstractSink *sink) {
 
 			AbstractSinkHelpers::Data *data = g_new0(AbstractSinkHelpers::Data, 1);
 
-			data->sink_data_ = s;
+			data->sink_data_ = NULL;
 			data->other_data_ = &data_;
 
 			s->Finish(data);
@@ -222,6 +223,10 @@ void Player::RemoveSink(AbstractSink *sink) {
 		}
 		it++;
 	}
+}
+
+const std::map<const char*, char*, PlayerHelpers::CmpStr> *Player::GetTagsMap() const {
+	return data_.tags_map_;
 }
 
 void Player::Init() {

@@ -43,7 +43,7 @@ TEST(PlayerTestTagsTest, tags_returned) {
 	player.AddSink(sink);
 	player.Process();
 
-	std::map<const char *, char *, PlayerHelpers::CmpStr>::iterator it;
+	std::map<const char *, char *, PlayerHelpers::CmpStr>::const_iterator it;
 	string line;
 
 	while(getline(in_file, line)) {

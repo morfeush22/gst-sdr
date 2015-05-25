@@ -8,11 +8,11 @@
 #ifndef SRC_RING_SRC_H_
 #define SRC_RING_SRC_H_
 
+#define RING_SRC_DATA_CAST(x) ((RingSrcHelpers::Data *)x)
+
 #include "abstract_src.h"
 #include "blocking_ring_buffer.h"
-
 #include <gst/gst.h>
-
 #include <stdint.h>
 
 namespace RingSrcHelpers {

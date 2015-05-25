@@ -8,8 +8,10 @@
 #ifndef SRC_PULSE_SINK_H_
 #define SRC_PULSE_SINK_H_
 
-#include "abstract_sink.h"
+#define PULSE_SINK_CAST(x) ((PulseSink *)x)
+#define PULSE_SINK_DATA_CAST(x) ((PulseSinkHelpers::Data *)(x))
 
+#include "abstract_sink.h"
 #include <gst/gst.h>
 
 namespace PulseSinkHelpers {

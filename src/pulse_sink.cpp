@@ -9,9 +9,9 @@
 #include "player.h"
 
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
-	AbstractSinkHelpers::Data *container = (AbstractSinkHelpers::Data *)container_ptr;
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)container->other_data_;
-	PulseSinkHelpers::Data *sink_data = (PulseSinkHelpers::Data *)container->sink_data_;
+	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
+	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data_);
+	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(container->sink_data_);
 
 	GstPad *sinkpad;
 
@@ -34,7 +34,7 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_element_release_request_pad(data->tee_, sink_data->teepad_);
 	gst_object_unref(sink_data->teepad_);
 
-	((PulseSink *)sink_data->abstract_sink_)->Finish(container);
+	PULSE_SINK_CAST(sink_data->abstract_sink_)->Finish(container);
 
 	return GST_PAD_PROBE_REMOVE;
 }
@@ -51,7 +51,7 @@ void PulseSink::InitSink(AbstractSinkHelpers::Data *ptr) {
 	if(IsLinked())
 		return;
 
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr->other_data_;
+	PlayerHelpers::Data *data = PLAYER_DATA_CAST(ptr->other_data_);
 
 	GstPad *sinkpad;
 	GstPadTemplate *templ;
@@ -104,11 +104,16 @@ const char *PulseSink::GetName() const {
 }
 
 void PulseSink::Finish(AbstractSinkHelpers::Data *ptr) {
-	//check if exists
+	gboolean connected = gst_object_has_ancestor((GstObject *)data_.sink_, (GstObject *)PLAYER_DATA_CAST(ptr->other_data_)->pipeline_);
 
-	PulseSinkHelpers::Data *sink_data = (PulseSinkHelpers::Data *)ptr->sink_data_;
+	if(IsLinked() && !connected) {
+		linked_ = false;
+		return;
+	}
 
-	gst_pad_add_probe(sink_data->teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, ptr, (GDestroyNotify)g_free);
+	ptr->sink_data_ = &data_;
+
+	gst_pad_add_probe(data_.teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, ptr, (GDestroyNotify)g_free);
 }
 
 bool PulseSink::IsLinked() const {

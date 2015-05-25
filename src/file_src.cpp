@@ -6,7 +6,6 @@
  */
 
 #include "file_src.h"
-
 #include "player.h"
 
 FileSrc::FileSrc(const char *path): path_(path) {

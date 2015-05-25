@@ -9,7 +9,6 @@
 #define SRC_BLOCKING_RING_BUFFER_H_
 
 #include "ring_buffer.h"
-
 #include <pthread.h>
 
 class BlockingRingBuffer {

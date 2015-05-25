@@ -6,7 +6,6 @@
  */
 
 #include "abstract_sink.h"
-
 #include <string.h>
 
 AbstractSink::~AbstractSink() {

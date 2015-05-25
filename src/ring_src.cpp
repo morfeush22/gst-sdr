@@ -7,9 +7,7 @@
 
 #include "player.h"
 #include "ring_src.h"
-
 #include <gst/app/app.h>
-
 #include <fstream>
 #include <unistd.h>
 

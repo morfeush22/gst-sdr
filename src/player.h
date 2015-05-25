@@ -8,11 +8,12 @@
 #ifndef SRC_PLAYER_H_
 #define SRC_PLAYER_H_
 
+#define PLAYER_CAST(x) ((Player *)x)
+#define PLAYER_DATA_CAST(x) ((PlayerHelpers::Data *)x)
+
 #include "abstract_sink.h"
 #include "abstract_src.h"
-
 #include <gst/gst.h>
-
 #include <list>
 #include <map>
 #include <stdint.h>
@@ -41,7 +42,7 @@ struct Data {
 
 	GMainLoop *loop_;
 
-	std::map<const char *, char *, PlayerHelpers::CmpStr> tags_map_;
+	std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map_;
 	gboolean ready_;
 };
 
@@ -83,6 +84,8 @@ public:
 	 * @return added sink
 	 */
 	AbstractSink *AddSink(AbstractSink *);
+
+	const std::map<const char *, char *, PlayerHelpers::CmpStr> *GetTagsMap() const;
 
 private:
 	PlayerHelpers::Data data_;

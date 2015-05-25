@@ -8,6 +8,9 @@
 #ifndef SRC_ABSTRACT_SINK_H_
 #define SRC_ABSTRACT_SINK_H_
 
+#define ABSTRACT_SINK_CAST(x) ((AbstractSink *)x)
+#define ABSTRACT_SINK_DATA_CAST(x) ((AbstractSinkHelpers::Data *)x)
+
 namespace AbstractSinkHelpers {
 
 struct Data {

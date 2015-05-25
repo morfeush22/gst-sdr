@@ -8,10 +8,11 @@
 #ifndef SRC_FAKE_SINK_H_
 #define SRC_FAKE_SINK_H_
 
+#define FAKE_SINK_CAST(x) ((FakeSink *)x)
+#define FAKE_SINK_DATA_CAST(x) ((FakeSinkHelpers::Data *)x)
+
 #include "abstract_sink.h"
-
 #include <gst/gst.h>
-
 #include <stdint.h>
 
 namespace FakeSinkHelpers {
