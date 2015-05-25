@@ -9,41 +9,38 @@
 #include "player.h"
 
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer ptr) {
-	Player *player = (Player *)((AbstractSinkHelpers::Data *)ptr)->other_data_;
-	PulseSink *sink = (PulseSink *)((AbstractSinkHelpers::Data *)ptr)->sink_;
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)((AbstractSinkHelpers::Data *)ptr)->other_data_;
+	PulseSinkHelpers::Data *sink_data = (PulseSinkHelpers::Data *)((AbstractSinkHelpers::Data *)ptr)->sink_data_;
 
 	GstPad *sinkpad;
 
-	if(!g_atomic_int_compare_and_exchange(&sink->removing_, FALSE, TRUE))
+	if(!g_atomic_int_compare_and_exchange(&sink_data->removing_, FALSE, TRUE))
 		return GST_PAD_PROBE_OK;
 
-	sinkpad = gst_element_get_static_pad(sink->queue_, "sink");
-	gst_pad_unlink(sink->teepad_, sinkpad);
+	sinkpad = gst_element_get_static_pad(sink_data->queue_, "sink");
+	gst_pad_unlink(sink_data->teepad_, sinkpad);
 	gst_object_unref(sinkpad);
 
-	gst_bin_remove(GST_BIN(player->pipeline_), sink->queue_);
-	gst_bin_remove(GST_BIN(player->pipeline_), sink->sink_);
+	gst_bin_remove(GST_BIN(data->pipeline_), sink_data->queue_);
+	gst_bin_remove(GST_BIN(data->pipeline_), sink_data->sink_);
 
-	gst_element_set_state(sink->sink_, GST_STATE_NULL);
-	gst_element_set_state(sink->queue_, GST_STATE_NULL);
+	gst_element_set_state(sink_data->sink_, GST_STATE_NULL);
+	gst_element_set_state(sink_data->queue_, GST_STATE_NULL);
 
-	gst_object_unref(sink->sink_);
-	gst_object_unref(sink->queue_);
+	gst_object_unref(sink_data->sink_);
+	gst_object_unref(sink_data->queue_);
 
-	gst_element_release_request_pad(player->tee_, sink->teepad_);
-	gst_object_unref(sink->teepad_);
+	gst_element_release_request_pad(data->tee_, sink_data->teepad_);
+	gst_object_unref(sink_data->teepad_);
 
-	sink->UnlinkFinished();
+	sink_data->abstract_sink_->Finish((AbstractSinkHelpers::Data *)ptr);
 
 	return GST_PAD_PROBE_REMOVE;
 }
 
 PulseSink::PulseSink():
-queue_(NULL),
-sink_(NULL),
-teepad_(NULL),
-removing_(false),
 linked_(false) {
+	data_.removing_ = FALSE;
 }
 
 PulseSink::~PulseSink() {

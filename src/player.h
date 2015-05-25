@@ -26,6 +26,25 @@ struct CmpStr {
 	}
 };
 
+struct Data {
+	void *player_;
+
+	GstElement *pipeline_;
+
+	GstElement *src_;
+	GstElement *iddemux_;
+	GstElement *decoder_;
+	GstElement *parser_;
+	GstElement *pitch_;
+	GstElement *converter_;
+	GstElement *tee_;
+
+	GMainLoop *loop_;
+
+	std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map_;
+	gboolean ready_;
+};
+
 }
 
 class Player {
@@ -55,12 +74,6 @@ public:
 	void RemoveSink(AbstractSink *);
 
 	/**
-	 * Get received tags
-	 * @return current tags map
-	 */
-	std::map<const char *, char *, PlayerHelpers::CmpStr> *GetTagsMap();
-
-	/**
 	 * Set playback speed
 	 */
 	void SetPlaybackSpeed(float);
@@ -71,25 +84,11 @@ public:
 	 */
 	AbstractSink *AddSink(AbstractSink *);
 
-	GstElement *pipeline_;
-
-	GstElement *src_;
-	GstElement *iddemux_;
-	GstElement *decoder_;
-	GstElement *parser_;
-	GstElement *pitch_;
-	GstElement *converter_;
-	GstElement *tee_;
-
-	GMainLoop *loop_;
-
-	gboolean ready_;
-
 private:
+	PlayerHelpers::Data data_;
+
 	AbstractSrc *abstract_src_;
 	std::list<AbstractSink *> abstract_sinks_;
-
-	std::map<const char *, char *, PlayerHelpers::CmpStr> tags_map_;
 
 	void SetTagsFilters();
 

@@ -14,7 +14,6 @@
 
 #include <stdint.h>
 
-
 class FakeSink: public AbstractSink {
 public:
 	FakeSink();
@@ -23,22 +22,31 @@ public:
 	uint32_t GetBytesReturned();
 	void AddBytes(uint32_t);
 
-	void InitSink(void *);
+	void InitSink(AbstractSinkHelpers::Data *);
 	const char *GetName() const;
-	void FinishEarly(void *);
+	void Finish(AbstractSinkHelpers::Data *);
 	bool IsLinked() const;
-	void UnlinkFinished();
+
+private:
+	FakeSinkHelpers::Data data_;
+
+	uint32_t bytes_returned_;
+	bool linked_;
+
+};
+
+namespace FakeSinkHelpers {
+
+struct Data {
+	FakeSink *abstract_sink_;
 
 	GstElement *queue_;
 	GstElement *sink_;
 	GstPad *teepad_;
 
 	gboolean removing_;
-
-private:
-	uint32_t bytes_returned_;
-	bool linked_;
-
 };
+
+}
 
 #endif /* SRC_FAKE_SINK_H_ */

@@ -13,11 +13,10 @@ public:
 	virtual ~AbstractSink();
 	AbstractSink();
 
-	virtual void InitSink(void *data) = 0;
+	virtual void InitSink(AbstractSinkHelpers::Data *data) = 0;
 	virtual const char *GetName() const = 0;
-	virtual void FinishEarly(void *data) = 0;
+	virtual void Finish(AbstractSinkHelpers::Data *data) = 0;
 	virtual bool IsLinked() const = 0;
-	virtual void UnlinkFinished() = 0;
 
 	bool operator ==(const AbstractSink &other) const;
 
@@ -26,7 +25,7 @@ public:
 namespace AbstractSinkHelpers {
 
 struct Data {
-	AbstractSink *sink_;
+	void *sink_data_;
 	void *other_data_;
 };
 

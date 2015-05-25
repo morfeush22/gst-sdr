@@ -17,22 +17,32 @@ public:
 	FileSink(const char *);
 	virtual ~FileSink();
 
-	void InitSink(void *);
+	virtual void InitSink(AbstractSinkHelpers::Data *);
 	const char *GetName() const;
-	void FinishEarly(void *);
+	void Finish(AbstractSinkHelpers::Data *);
 	bool IsLinked() const;
-	void UnlinkFinished();
+
+protected:
+	const char *path_;
+	bool linked_;
+
+private:
+	FileSinkHelpers::Data data_;
+
+};
+
+namespace FileSinkHelpers {
+
+struct Data {
+	FileSink *abstract_sink_;
 
 	GstElement *queue_;
 	GstElement *sink_;
 	GstPad *teepad_;
 
 	gboolean removing_;
-
-protected:
-	const char *path_;
-	bool linked_;
-
 };
+
+}
 
 #endif /* SRC_FILE_SINK_H_ */

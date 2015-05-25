@@ -17,21 +17,30 @@ public:
 	PulseSink();
 	virtual ~PulseSink();
 
-	void InitSink(void *);
+	void InitSink(AbstractSinkHelpers::Data *);
 	const char *GetName() const;
-	void FinishEarly(void *);
+	void Finish(AbstractSinkHelpers::Data *);
 	bool IsLinked() const;
-	void UnlinkFinished();
+
+private:
+	PulseSinkHelpers::Data data_;
+
+	bool linked_;
+
+};
+
+namespace PulseSinkHelpers {
+
+struct Data {
+	PulseSink *abstract_sink_;
 
 	GstElement *queue_;
 	GstElement *sink_;
 	GstPad *teepad_;
 
 	gboolean removing_;
-
-private:
-	bool linked_;
-
 };
+
+}
 
 #endif /* SRC_PULSE_SINK_H_ */
