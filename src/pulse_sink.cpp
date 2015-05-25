@@ -33,7 +33,7 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_element_release_request_pad(data->tee_, sink_data->teepad_);
 	gst_object_unref(sink_data->teepad_);
 
-	sink_data->abstract_sink_->Finish((AbstractSinkHelpers::Data *)ptr);
+	((PulseSink *)sink_data->abstract_sink_)->Finish((AbstractSinkHelpers::Data *)ptr);
 
 	return GST_PAD_PROBE_REMOVE;
 }
@@ -46,53 +46,53 @@ linked_(false) {
 PulseSink::~PulseSink() {
 }
 
-void PulseSink::InitSink(void *ptr) {
+void PulseSink::InitSink(AbstractSinkHelpers::Data *ptr) {
 	if(IsLinked())
 		return;
 
-	Player *player = static_cast<Player *>(ptr);
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr->other_data_;
 
 	GstPad *sinkpad;
 	GstPadTemplate *templ;
 
-	templ = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(player->tee_), "src_%u");
-	teepad_ = gst_element_request_pad(player->tee_, templ, NULL, NULL);
+	templ = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(data->tee_), "src_%u");
+	data_.teepad_ = gst_element_request_pad(data->tee_, templ, NULL, NULL);
 
 	char buff[100];
 
 	strcpy(buff, GetName());
 	strcat(buff, "_queue");
 
-	queue_ = gst_element_factory_make("queue", buff);
-	g_assert(queue_);
+	data_.queue_ = gst_element_factory_make("queue", buff);
+	g_assert(data_.queue_);
 
 	strcpy(buff, GetName());
 	strcat(buff, "_sink");
 
-	sink_ = gst_element_factory_make(GetName(), buff);
-	g_assert(sink_);
+	data_.sink_ = gst_element_factory_make(GetName(), buff);
+	g_assert(data_.sink_);
 
-	removing_ = false;
+	data_.removing_ = false;
 
-	gst_object_ref(queue_);
-	gst_object_ref(sink_);
+	gst_object_ref(data_.queue_);
+	gst_object_ref(data_.sink_);
 
-	gst_bin_add_many(GST_BIN(player->pipeline_),
-			queue_,
-			sink_,
+	gst_bin_add_many(GST_BIN(data->pipeline_),
+			data_.queue_,
+			data_.sink_,
 			NULL);
 
 	g_assert(gst_element_link_many(
-			queue_,
-			sink_,
+			data_.queue_,
+			data_.sink_,
 			NULL)
 	);
 
-	gst_element_sync_state_with_parent(queue_);
-	gst_element_sync_state_with_parent(sink_);
+	gst_element_sync_state_with_parent(data_.queue_);
+	gst_element_sync_state_with_parent(data_.sink_);
 
-	sinkpad = gst_element_get_static_pad(queue_, "sink");
-	gst_pad_link(teepad_, sinkpad);
+	sinkpad = gst_element_get_static_pad(data_.queue_, "sink");
+	gst_pad_link(data_.teepad_, sinkpad);
 	gst_object_unref(sinkpad);
 
 	linked_ = true;
@@ -102,19 +102,14 @@ const char *PulseSink::GetName() const {
 	return "pulsesink";
 }
 
-void PulseSink::FinishEarly(void *ptr) {
-	AbstractSinkHelpers::Data data;
+void PulseSink::Finish(AbstractSinkHelpers::Data *ptr) {
+	//check if exists
 
-	data.sink_ = this;
-	data.other_data_ = ptr;
+	PulseSinkHelpers::Data *sink_data = (PulseSinkHelpers::Data *)ptr->sink_data_;
 
-	gst_pad_add_probe(teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data, (GDestroyNotify)g_free);
+	gst_pad_add_probe(sink_data->teepad_, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, ptr, (GDestroyNotify)g_free);
 }
 
 bool PulseSink::IsLinked() const {
 	return linked_;
-}
-
-void PulseSink::UnlinkFinished() {
-	linked_ = false;
 }

@@ -12,6 +12,21 @@
 
 #include <gst/gst.h>
 
+
+namespace FileSinkHelpers {
+
+struct Data {
+	void *abstract_sink_;
+
+	GstElement *queue_;
+	GstElement *sink_;
+	GstPad *teepad_;
+
+	gboolean removing_;
+};
+
+}
+
 class FileSink: public AbstractSink {
 public:
 	FileSink(const char *);
@@ -30,19 +45,5 @@ private:
 	FileSinkHelpers::Data data_;
 
 };
-
-namespace FileSinkHelpers {
-
-struct Data {
-	FileSink *abstract_sink_;
-
-	GstElement *queue_;
-	GstElement *sink_;
-	GstPad *teepad_;
-
-	gboolean removing_;
-};
-
-}
 
 #endif /* SRC_FILE_SINK_H_ */

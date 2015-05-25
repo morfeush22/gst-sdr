@@ -16,12 +16,12 @@ FileSrc::~FileSrc() {
 }
 
 void FileSrc::InitSrc(void *ptr) {
-	Player *player = static_cast<Player *>(ptr);
+	PlayerHelpers::Data *data = static_cast<PlayerHelpers::Data *>(ptr);
 
-	player->src_ = gst_element_factory_make(GetName(), "src");
-	g_assert(player->src_);
+	data->src_ = gst_element_factory_make(GetName(), "src");
+	g_assert(data->src_);
 
-	g_object_set(player->src_, "location", path_, NULL);
+	g_object_set(data->src_, "location", path_, NULL);
 }
 
 const char *FileSrc::GetName() {

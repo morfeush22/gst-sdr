@@ -32,9 +32,8 @@ const char *RingSrc::GetName() {
 	return "appsrc";
 }
 
-static gboolean ReadData(gpointer *ptr) {
-	Player *player = (Player *)ptr;
-	RingSrc *src = (RingSrc *)player->GetSrc();
+static gboolean ReadData(gpointer ptr) {
+	PlayerHelpers::Data *data = static_cast<PlayerHelpers::Data *>(ptr);
 
 	GstBuffer *buffer;
 	GstMapInfo map;
@@ -47,18 +46,18 @@ static gboolean ReadData(gpointer *ptr) {
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
 	it = (float *)map.data;
 
-	size = src->GetRingBuffer()->ReadFrom(it, BUFF_SIZE);
+	size = data->src->GetRingBuffer()->ReadFrom(it, BUFF_SIZE);
 
 	gst_buffer_unmap(buffer, &map);
 
-	ret = gst_app_src_push_buffer(GST_APP_SRC(player->src_), buffer);
+	ret = gst_app_src_push_buffer(GST_APP_SRC(data->src_), buffer);
 
 	if(ret !=  GST_FLOW_OK){
 		return FALSE;
 	}
 
 	if(size != BUFF_SIZE){
-		gst_app_src_end_of_stream((GstAppSrc *)player->src_);
+		gst_app_src_end_of_stream((GstAppSrc *)data->src_);
 		return FALSE;
 	}
 
@@ -68,7 +67,7 @@ static gboolean ReadData(gpointer *ptr) {
 }
 
 
-static void StartFeed(GstElement *pipeline, guint size, gpointer *ptr) {
+static void StartFeed(GstElement *pipeline, guint size, gpointer ptr) {
 	Player *player = (Player *)ptr;
 	RingSrc *src = (RingSrc *)player->GetSrc();
 
@@ -77,7 +76,7 @@ static void StartFeed(GstElement *pipeline, guint size, gpointer *ptr) {
 	}
 }
 
-static void StopFeed(GstElement *pipeline, gpointer *ptr) {
+static void StopFeed(GstElement *pipeline, gpointer ptr) {
 	Player *player = (Player *)ptr;
 	RingSrc *src = (RingSrc *)player->GetSrc();
 
@@ -87,16 +86,16 @@ static void StopFeed(GstElement *pipeline, gpointer *ptr) {
 	}
 }
 
-void RingSrc::InitSrc(void *ptr) {
-	Player *player = static_cast<Player *>(ptr);
+void RingSrc::InitSrc(AbstractSrcHelpers::Data *ptr) {
+	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr->other_data_;
 
-	player->src_ = gst_element_factory_make(GetName(), "src");
-	g_assert(player->src_);
+	data->src_ = gst_element_factory_make(GetName(), "src");
+	g_assert(data->src_);
 
-	g_signal_connect(player->src_, "need-data", G_CALLBACK(StartFeed), player);
-	g_signal_connect(player->src_, "enough-data", G_CALLBACK(StopFeed), player);
+	g_signal_connect(data->src_, "need-data", G_CALLBACK(StartFeed), data);
+	g_signal_connect(data->src_, "enough-data", G_CALLBACK(StopFeed), data);
 
-	gst_app_src_set_max_bytes(GST_APP_SRC(player->src_), APP_SRC_BUFF_SIZE);
+	gst_app_src_set_max_bytes(GST_APP_SRC(data->src_), APP_SRC_BUFF_SIZE);
 }
 
 float RingSrc::DecrementRatio(void *ptr) {
@@ -126,11 +125,11 @@ size_t RingSrc::ParseThreshold(float fraction) {
 }
 
 void RingSrc::ProcessThreshold(void *ptr) {
-	Player *player = static_cast<Player *>(ptr);
+	PlayerHelpers::Data *data = static_cast<PlayerHelpers::Data *>(ptr);
 
 	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", ring_buffer_->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
 
-	if(player->ready_) {
+	if(data->ready_) {
 		float ratio;
 
 		if(ring_buffer_->DataStored()<ParseThreshold(0.5-threshold_)) {

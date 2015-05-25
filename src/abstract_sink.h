@@ -8,6 +8,15 @@
 #ifndef SRC_ABSTRACT_SINK_H_
 #define SRC_ABSTRACT_SINK_H_
 
+namespace AbstractSinkHelpers {
+
+struct Data {
+	void *sink_data_;
+	void *other_data_;
+};
+
+}
+
 class AbstractSink {
 public:
 	virtual ~AbstractSink();
@@ -21,14 +30,5 @@ public:
 	bool operator ==(const AbstractSink &other) const;
 
 };
-
-namespace AbstractSinkHelpers {
-
-struct Data {
-	void *sink_data_;
-	void *other_data_;
-};
-
-}
 
 #endif /* SRC_ABSTRACT_SINK_H_ */

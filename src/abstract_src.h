@@ -8,12 +8,21 @@
 #ifndef SRC_ABSTRACT_SRC_H_
 #define SRC_ABSTRACT_SRC_H_
 
+namespace AbstractSrcHelpers {
+
+struct Data {
+	void *src_data_;
+	void *other_data_;
+};
+
+}
+
 class AbstractSrc {
 public:
 	AbstractSrc();
 	virtual ~AbstractSrc();
 
-	virtual void InitSrc(void *data) = 0;
+	virtual void InitSrc(AbstractSrcHelpers::Data *data) = 0;
 	virtual const char *GetName() = 0;
 
 };

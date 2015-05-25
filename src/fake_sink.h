@@ -14,6 +14,20 @@
 
 #include <stdint.h>
 
+namespace FakeSinkHelpers {
+
+struct Data {
+	void *abstract_sink_;
+
+	GstElement *queue_;
+	GstElement *sink_;
+	GstPad *teepad_;
+
+	gboolean removing_;
+};
+
+}
+
 class FakeSink: public AbstractSink {
 public:
 	FakeSink();
@@ -34,19 +48,5 @@ private:
 	bool linked_;
 
 };
-
-namespace FakeSinkHelpers {
-
-struct Data {
-	FakeSink *abstract_sink_;
-
-	GstElement *queue_;
-	GstElement *sink_;
-	GstPad *teepad_;
-
-	gboolean removing_;
-};
-
-}
 
 #endif /* SRC_FAKE_SINK_H_ */

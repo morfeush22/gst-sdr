@@ -33,7 +33,7 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_element_release_request_pad(data->tee_, sink_data->teepad_);
 	gst_object_unref(sink_data->teepad_);
 
-	sink_data->abstract_sink_->Finish((AbstractSinkHelpers::Data *)ptr);
+	((FakeSink *)sink_data->abstract_sink_)->Finish((AbstractSinkHelpers::Data *)ptr);
 
 	return GST_PAD_PROBE_REMOVE;
 }
@@ -64,52 +64,51 @@ void FakeSink::InitSink(AbstractSinkHelpers::Data *ptr) {
 		return;
 
 	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr->other_data_;
-	FakeSinkHelpers::Data *sink_data = (FakeSinkHelpers::Data *)ptr->sink_data_;
 
 	GstPad *sinkpad;
 	GstPadTemplate *templ;
 
 	templ = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(data->tee_), "src_%u");
-	sink_data->teepad_ = gst_element_request_pad(data->tee_, templ, NULL, NULL);
+	data_.teepad_ = gst_element_request_pad(data->tee_, templ, NULL, NULL);
 
 	char buff[100];
 
 	strcpy(buff, GetName());
 	strcat(buff, "_queue");
 
-	sink_data->queue_ = gst_element_factory_make("queue", buff);
-	g_assert(sink_data->queue_);
+	data_.queue_ = gst_element_factory_make("queue", buff);
+	g_assert(data_.queue_);
 
 	strcpy(buff, GetName());
 	strcat(buff, "_sink");
 
-	sink_data->sink_ = gst_element_factory_make(GetName(), buff);
-	g_assert(sink_data->sink_);
+	data_.sink_ = gst_element_factory_make(GetName(), buff);
+	g_assert(data_.sink_);
 
-	g_object_set(sink_data->sink_, "signal-handoffs", TRUE, NULL);
-	g_signal_connect(sink_data->sink_, "handoff", G_CALLBACK(SinkHandoffCall), this);
+	g_object_set(data_.sink_, "signal-handoffs", TRUE, NULL);
+	g_signal_connect(data_.sink_, "handoff", G_CALLBACK(SinkHandoffCall), this);
 
-	sink_data->removing_ = false;
+	data_.removing_ = false;
 
-	gst_object_ref(sink_data->queue_);
-	gst_object_ref(sink_data->sink_);
+	gst_object_ref(data_.queue_);
+	gst_object_ref(data_.sink_);
 
 	gst_bin_add_many(GST_BIN(data->pipeline_),
-			sink_data->queue_,
-			sink_data->sink_,
+			data_.queue_,
+			data_.sink_,
 			NULL);
 
 	g_assert(gst_element_link_many(
-			sink_data->queue_,
-			sink_data->sink_,
+			data_.queue_,
+			data_.sink_,
 			NULL)
 	);
 
-	gst_element_sync_state_with_parent(sink_data->queue_);
-	gst_element_sync_state_with_parent(sink_data->sink_);
+	gst_element_sync_state_with_parent(data_.queue_);
+	gst_element_sync_state_with_parent(data_.sink_);
 
-	sinkpad = gst_element_get_static_pad(sink_data->queue_, "sink");
-	gst_pad_link(sink_data->teepad_, sinkpad);
+	sinkpad = gst_element_get_static_pad(data_.queue_, "sink");
+	gst_pad_link(data_.teepad_, sinkpad);
 	gst_object_unref(sinkpad);
 
 	linked_ = true;

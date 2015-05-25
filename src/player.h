@@ -41,7 +41,7 @@ struct Data {
 
 	GMainLoop *loop_;
 
-	std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map_;
+	std::map<const char *, char *, PlayerHelpers::CmpStr> tags_map_;
 	gboolean ready_;
 };
 

@@ -20,7 +20,7 @@ public:
 	RingSrc(float threshold);
 	virtual ~RingSrc();
 
-	void InitSrc(void *);
+	void InitSrc(AbstractSrcHelpers::Data *);
 	const char *GetName();
 
 	float DecrementRatio(void *);

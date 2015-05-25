@@ -12,6 +12,20 @@
 
 #include <gst/gst.h>
 
+namespace PulseSinkHelpers {
+
+struct Data {
+	void *abstract_sink_;
+
+	GstElement *queue_;
+	GstElement *sink_;
+	GstPad *teepad_;
+
+	gboolean removing_;
+};
+
+}
+
 class PulseSink: public AbstractSink {
 public:
 	PulseSink();
@@ -28,19 +42,5 @@ private:
 	bool linked_;
 
 };
-
-namespace PulseSinkHelpers {
-
-struct Data {
-	PulseSink *abstract_sink_;
-
-	GstElement *queue_;
-	GstElement *sink_;
-	GstPad *teepad_;
-
-	gboolean removing_;
-};
-
-}
 
 #endif /* SRC_PULSE_SINK_H_ */

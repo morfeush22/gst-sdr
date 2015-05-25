@@ -16,7 +16,7 @@ static void SaveTags(const GstTagList *list, const gchar *tag, gpointer ptr) {
 	gint count = gst_tag_list_get_tag_size(list, tag);
 
 	for(gint i = 0; i < count; i++) {
-		if((it = data->tags_map_->find(gst_tag_get_nick(tag))) != data->tags_map_->end()) {
+		if((it = data->tags_map_.find(gst_tag_get_nick(tag))) != data->tags_map_.end()) {
 			if(gst_tag_get_type(tag) == G_TYPE_STRING)
 				gst_tag_list_get_string_index(list, tag, i, &it->second);
 			else {
@@ -110,10 +110,10 @@ void Player::Process() {
 
 	gst_element_set_state((GstElement *)(data_.pipeline_), GST_STATE_PLAYING);
 	data_.loop_ = g_main_loop_new(NULL, FALSE);
-	g_main_loop_run(loop_);
+	g_main_loop_run(data_.loop_);
 
 	gst_element_set_state((GstElement *)(data_.pipeline_), GST_STATE_NULL);
-	gst_object_unref(pipeline_);
+	gst_object_unref(data_.pipeline_);
 
 	std::list<AbstractSink *>::iterator it;
 	it = abstract_sinks_.begin();
@@ -121,8 +121,8 @@ void Player::Process() {
 	while(it != abstract_sinks_.end()) {
 		AbstractSinkHelpers::Data *data = g_new0(AbstractSinkHelpers::Data, 1);
 
-		data->sink_data_ = it;
-		data->other_data_ = data_;
+		data->sink_data_ = *(it);
+		data->other_data_ = &data_;
 
 		(*it)->Finish(data);
 		it = abstract_sinks_.erase(it);
@@ -153,7 +153,12 @@ void Player::ConstructObjects() {
 void Player::SetPropeties() {
 	GstBus *bus;
 
-	abstract_src_->InitSrc(static_cast<void *>(this));
+	AbstractSrcHelpers::Data data;
+
+	data.other_data_ = &data_;
+	data.src_data_ = NULL;
+
+	abstract_src_->InitSrc(&data);
 
 	gst_bin_add_many(GST_BIN(data_.pipeline_),
 			data_.src_,
@@ -182,8 +187,14 @@ void Player::SetTagsFilters() {
 }
 
 AbstractSink *Player::AddSink(AbstractSink *sink) {
-	sink->InitSink(static_cast<void *>(this));
+	AbstractSinkHelpers::Data data;
+
+	data.sink_data_ = NULL;
+	data.other_data_ = &data_;
+
+	sink->InitSink(&data);
 	abstract_sinks_.push_back(sink);
+
 	return sink;
 }
 
@@ -197,7 +208,7 @@ void Player::RemoveSink(AbstractSink *sink) {
 			AbstractSinkHelpers::Data *data = g_new0(AbstractSinkHelpers::Data, 1);
 
 			data->sink_data_ = s;
-			data->other_data_ = data_;
+			data->other_data_ = &data_;
 
 			s->Finish(data);
 			abstract_sinks_.erase(it);
