@@ -8,6 +8,7 @@
 #ifndef SRC_RING_SRC_H_
 #define SRC_RING_SRC_H_
 
+#define RING_DATA_CAST(x) ((RingSrc *)x)
 #define RING_SRC_DATA_CAST(x) ((RingSrcHelpers::Data *)x)
 
 #include "abstract_src.h"

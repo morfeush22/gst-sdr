@@ -8,6 +8,9 @@
 #ifndef SRC_ABSTRACT_SRC_H_
 #define SRC_ABSTRACT_SRC_H_
 
+#define ABSTRACT_SRC_CAST(x) ((AbstractSrc *)x)
+#define ABSTRACT_SRC_DATA_CAST(x) ((AbstractSrcHelpers::Data *)x)
+
 namespace AbstractSrcHelpers {
 
 struct Data {

@@ -32,9 +32,9 @@ const char *RingSrc::GetName() {
 }
 
 static gboolean ReadData(gpointer container_ptr) {
-	AbstractSrcHelpers::Data *container = (AbstractSrcHelpers::Data *)container_ptr;
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)container->other_data_;
-	RingSrcHelpers::Data *src_data = (RingSrcHelpers::Data *)container->src_data_;
+	AbstractSrcHelpers::Data *container = ABSTRACT_SRC_DATA_CAST(container_ptr);
+	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data_);
+	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(container->src_data_);
 
 	GstBuffer *buffer;
 	GstMapInfo map;
@@ -61,14 +61,14 @@ static gboolean ReadData(gpointer container_ptr) {
 		return FALSE;
 	}
 
-	((RingSrc *)src_data->abstract_src_)->ProcessThreshold(container);
+	RING_DATA_CAST(src_data->abstract_src_)->ProcessThreshold(container);
 
 	return TRUE;
 }
 
 
 static void StartFeed(GstElement *pipeline, guint size, gpointer container_ptr) {
-	RingSrcHelpers::Data *data = (RingSrcHelpers::Data *)((AbstractSrcHelpers::Data *)container_ptr)->src_data_;
+	RingSrcHelpers::Data *data = RING_SRC_DATA_CAST(ABSTRACT_SRC_DATA_CAST(container_ptr)->src_data_);
 
 	if(data->source_id_ == 0) {
 		data->source_id_ = g_idle_add((GSourceFunc)ReadData, container_ptr);
@@ -76,7 +76,7 @@ static void StartFeed(GstElement *pipeline, guint size, gpointer container_ptr) 
 }
 
 static void StopFeed(GstElement *pipeline, gpointer container_ptr) {
-	RingSrcHelpers::Data *data = (RingSrcHelpers::Data *)((AbstractSrcHelpers::Data *)container_ptr)->src_data_;
+	RingSrcHelpers::Data *data = RING_SRC_DATA_CAST(ABSTRACT_SRC_DATA_CAST(container_ptr)->src_data_);
 
 	if (data->source_id_ != 0) {
 		g_source_remove(data->source_id_);
@@ -87,7 +87,7 @@ static void StopFeed(GstElement *pipeline, gpointer container_ptr) {
 void RingSrc::InitSrc(AbstractSrcHelpers::Data *ptr) {
 	data_.source_id_ = 0;
 
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr->other_data_;
+	PlayerHelpers::Data *data = PLAYER_DATA_CAST(ptr->other_data_);
 
 	data->src_ = gst_element_factory_make(GetName(), "src");
 	g_assert(data->src_);
@@ -127,8 +127,8 @@ size_t RingSrc::ParseThreshold(float fraction) {
 }
 
 void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
-	PlayerHelpers::Data *data = (PlayerHelpers::Data *)ptr->other_data_;
-	RingSrcHelpers::Data *src_data = (RingSrcHelpers::Data *)ptr->src_data_;
+	PlayerHelpers::Data *data = PLAYER_DATA_CAST(ptr->other_data_);
+	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(ptr->src_data_);
 
 	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu - read: %lu\n", src_data->ring_buffer_->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_), ParseThreshold(0.25));
 
