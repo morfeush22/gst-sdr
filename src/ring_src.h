@@ -42,7 +42,7 @@ public:
 	size_t ParseThreshold(float);
 	void ProcessThreshold(AbstractSrcHelpers::Data *);
 
-	void Write(float *, size_t);
+	void Write(char *, size_t);
 	void LastFrame();
 
 private:

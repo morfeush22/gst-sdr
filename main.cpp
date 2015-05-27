@@ -5,10 +5,12 @@
 #include "src/player.h"
 #include "src/pulse_sink.h"
 #include "src/ring_src.h"
-#include "data_dumper.h"
 #include "src/blocking_ring_buffer.h"
+#include "file_wrapper.h"
+#include <unistd.h>
 
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -40,38 +42,50 @@ static gboolean RemCb(gpointer data) {
 	return FALSE;
 }
 
-static void *ReadingThread(void *context) {
-	DataDumper *dumper = (DataDumper *)context;
-	return dumper->StartDumping();
+#define BYTES 96000
+
+static FileWrapper *file_wrapper = new FileWrapper("./player_unittest_file.aac", BYTES);
+static const char *const *start = file_wrapper->GetCurrentChunkPointer();
+
+static void *ReadingThread(void *data) {
+	while(1) {
+		RingSrc *src = (RingSrc *)data;
+
+		int size = file_wrapper->GetNextChunk();
+		char *curr_ptr = const_cast<char *>(*start);
+
+		src->Write(curr_ptr, size);
+
+		sleep(1);
+	}
 }
 
 int main() {
-	pthread_t read_thread;
+	pthread_t thread;
 	pthread_attr_t attr;
 
-	RingSrc *src = new RingSrc(0.20);
+	RingSrc *src = new RingSrc(0.01);
 	PulseSink *sink = new PulseSink();
 	FileSink *new_sink = new FileSink("./test.raw");
 
-	DataDumper *dumper = new DataDumper(100000, 1000000000, "./player_unittest_file.aac", src);
-
-	pthread_attr_init(&attr);
-	//pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&read_thread, &attr, &ReadingThread, dumper);
+	pthread_attr_init(&attr) ;
+	pthread_create(&thread, &attr, ReadingThread, src) ;
 
 	Player player(src);
 	player.AddSink(sink);
 
+	/*
 	Data data;
 	data.player = &player;
 	data.sink = new_sink;
 
-	//g_timeout_add_seconds(1, AddCb, &data);
-	//g_timeout_add_seconds(5, RemCb, &data);
+	g_timeout_add_seconds(1, AddCb, &data);
+	g_timeout_add_seconds(5, RemCb, &data);
+	 */
 
 	player.Process();
 
-	delete dumper;
+	delete file_wrapper;
 	delete sink;
 	delete src;
 }

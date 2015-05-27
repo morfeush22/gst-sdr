@@ -8,11 +8,10 @@
 #include "player.h"
 #include "ring_src.h"
 #include <gst/app/app.h>
-#include <fstream>
-#include <unistd.h>
 
 #define RESOLUTION 0.001
-#define BUFF_SIZE 100000	//100*4kB (float)
+#define BUFF_SIZE 960000	//960kB
+#define BUFF_CHUNK 9600
 #define APP_SRC_BUFF_SIZE 1000*25	//25kB, size of internal appsrc buffer
 
 RingSrc::RingSrc(float threshold):
@@ -45,15 +44,15 @@ static gboolean ReadData(gpointer container_ptr) {
 
 	GstBuffer *buffer;
 	GstMapInfo map;
-	float *it;
+	char *it;
 	gint size;
 	GstFlowReturn ret;
 
-	buffer = gst_buffer_new_and_alloc(BUFF_SIZE*sizeof(float));
+	buffer = gst_buffer_new_and_alloc(BUFF_CHUNK);
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
-	it = (float *)map.data;
+	it = (char *)map.data;
 
-	size = src_data->ring_buffer_->ReadFrom(it, BUFF_SIZE);
+	size = src_data->ring_buffer_->ReadFrom(it, BUFF_CHUNK);
 
 	gst_buffer_unmap(buffer, &map);
 
@@ -63,7 +62,7 @@ static gboolean ReadData(gpointer container_ptr) {
 		return FALSE;
 	}
 
-	if(size != BUFF_SIZE){
+	if(size != BUFF_CHUNK){
 		gst_app_src_end_of_stream((GstAppSrc *)data->src_);
 		return FALSE;
 	}
@@ -157,7 +156,7 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 	}
 }
 
-void RingSrc::Write(float *buffer, size_t length) {
+void RingSrc::Write(char *buffer, size_t length) {
 	RING_SRC_DATA_CAST(data_->src_data_)->ring_buffer_->WriteInto(buffer, length);
 }
 

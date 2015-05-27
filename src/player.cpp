@@ -96,6 +96,7 @@ Player::Player(AbstractSrc *src):
 abstract_src_(src) {
 	gst_init (NULL, NULL);
 	data_.tags_map_ = new std::map<const char *, char *, PlayerHelpers::CmpStr>;
+	data_.player_ = this;
 	data_.ready_ = FALSE;
 	Init();
 }
