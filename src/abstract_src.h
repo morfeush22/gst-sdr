@@ -8,8 +8,8 @@
 #ifndef SRC_ABSTRACT_SRC_H_
 #define SRC_ABSTRACT_SRC_H_
 
-#define ABSTRACT_SRC_CAST(x) ((AbstractSrc *)x)
-#define ABSTRACT_SRC_DATA_CAST(x) ((AbstractSrcHelpers::Data *)x)
+#define ABSTRACT_SRC_CAST(X) ((AbstractSrc *)X)
+#define ABSTRACT_SRC_DATA_CAST(X) ((AbstractSrcHelpers::Data *)X)
 
 namespace AbstractSrcHelpers {
 
@@ -25,7 +25,7 @@ public:
 	AbstractSrc();
 	virtual ~AbstractSrc();
 
-	virtual void InitSrc(AbstractSrcHelpers::Data *data) = 0;
+	virtual void InitSrc(void *other_data) = 0;
 	virtual const char *GetName() = 0;
 
 };

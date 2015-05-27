@@ -8,8 +8,8 @@
 #ifndef SRC_PULSE_SINK_H_
 #define SRC_PULSE_SINK_H_
 
-#define PULSE_SINK_CAST(x) ((PulseSink *)x)
-#define PULSE_SINK_DATA_CAST(x) ((PulseSinkHelpers::Data *)(x))
+#define PULSE_SINK_CAST(X) ((PulseSink *)X)
+#define PULSE_SINK_DATA_CAST(X) ((PulseSinkHelpers::Data *)(X))
 
 #include "abstract_sink.h"
 #include <gst/gst.h>
@@ -33,13 +33,13 @@ public:
 	PulseSink();
 	virtual ~PulseSink();
 
-	void InitSink(AbstractSinkHelpers::Data *);
+	void InitSink(void *);
 	const char *GetName() const;
-	void Finish(AbstractSinkHelpers::Data *);
+	void Finish();
 	bool IsLinked() const;
 
 private:
-	PulseSinkHelpers::Data data_;
+	AbstractSinkHelpers::Data *data_;
 
 	bool linked_;
 

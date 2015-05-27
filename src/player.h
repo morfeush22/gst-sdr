@@ -8,8 +8,8 @@
 #ifndef SRC_PLAYER_H_
 #define SRC_PLAYER_H_
 
-#define PLAYER_CAST(x) ((Player *)x)
-#define PLAYER_DATA_CAST(x) ((PlayerHelpers::Data *)x)
+#define PLAYER_CAST(X) ((Player *)X)
+#define PLAYER_DATA_CAST(X) ((PlayerHelpers::Data *)X)
 
 #include "abstract_sink.h"
 #include "abstract_src.h"

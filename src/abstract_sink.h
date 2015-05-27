@@ -8,8 +8,8 @@
 #ifndef SRC_ABSTRACT_SINK_H_
 #define SRC_ABSTRACT_SINK_H_
 
-#define ABSTRACT_SINK_CAST(x) ((AbstractSink *)x)
-#define ABSTRACT_SINK_DATA_CAST(x) ((AbstractSinkHelpers::Data *)x)
+#define ABSTRACT_SINK_CAST(X) ((AbstractSink *)X)
+#define ABSTRACT_SINK_DATA_CAST(X) ((AbstractSinkHelpers::Data *)X)
 
 namespace AbstractSinkHelpers {
 
@@ -25,9 +25,9 @@ public:
 	virtual ~AbstractSink();
 	AbstractSink();
 
-	virtual void InitSink(AbstractSinkHelpers::Data *data) = 0;
+	virtual void InitSink(void *other_data) = 0;
 	virtual const char *GetName() const = 0;
-	virtual void Finish(AbstractSinkHelpers::Data *data) = 0;
+	virtual void Finish() = 0;
 	virtual bool IsLinked() const = 0;
 
 	bool operator ==(const AbstractSink &other) const;

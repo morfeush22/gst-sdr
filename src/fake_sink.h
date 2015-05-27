@@ -8,8 +8,8 @@
 #ifndef SRC_FAKE_SINK_H_
 #define SRC_FAKE_SINK_H_
 
-#define FAKE_SINK_CAST(x) ((FakeSink *)x)
-#define FAKE_SINK_DATA_CAST(x) ((FakeSinkHelpers::Data *)x)
+#define FAKE_SINK_CAST(X) ((FakeSink *)X)
+#define FAKE_SINK_DATA_CAST(X) ((FakeSinkHelpers::Data *)X)
 
 #include "abstract_sink.h"
 #include <gst/gst.h>
@@ -37,13 +37,13 @@ public:
 	uint32_t GetBytesReturned();
 	void AddBytes(uint32_t);
 
-	void InitSink(AbstractSinkHelpers::Data *);
+	void InitSink(void *);
 	const char *GetName() const;
-	void Finish(AbstractSinkHelpers::Data *);
+	void Finish();
 	bool IsLinked() const;
 
 private:
-	FakeSinkHelpers::Data data_;
+	AbstractSinkHelpers::Data *data_;
 
 	uint32_t bytes_returned_;
 	bool linked_;

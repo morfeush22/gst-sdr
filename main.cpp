@@ -5,6 +5,8 @@
 #include "src/player.h"
 #include "src/pulse_sink.h"
 #include "src/ring_src.h"
+#include "data_dumper.h"
+#include "src/blocking_ring_buffer.h"
 
 #include <iostream>
 
@@ -38,10 +40,24 @@ static gboolean RemCb(gpointer data) {
 	return FALSE;
 }
 
+static void *ReadingThread(void *context) {
+	DataDumper *dumper = (DataDumper *)context;
+	return dumper->StartDumping();
+}
+
 int main() {
+	pthread_t read_thread;
+	pthread_attr_t attr;
+
 	RingSrc *src = new RingSrc(0.20);
 	PulseSink *sink = new PulseSink();
 	FileSink *new_sink = new FileSink("./test.raw");
+
+	DataDumper *dumper = new DataDumper(100000, 1000000000, "./player_unittest_file.aac", src);
+
+	pthread_attr_init(&attr);
+	//pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_create(&read_thread, &attr, &ReadingThread, dumper);
 
 	Player player(src);
 	player.AddSink(sink);
@@ -50,10 +66,12 @@ int main() {
 	data.player = &player;
 	data.sink = new_sink;
 
-	g_timeout_add_seconds(1, AddCb, &data);
-	g_timeout_add_seconds(5, RemCb, &data);
+	//g_timeout_add_seconds(1, AddCb, &data);
+	//g_timeout_add_seconds(5, RemCb, &data);
+
 	player.Process();
 
+	delete dumper;
 	delete sink;
 	delete src;
 }

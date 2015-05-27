@@ -18,13 +18,20 @@
 RingSrc::RingSrc(float threshold):
 threshold_(threshold),
 current_ratio_(1.0) {
-	data_.abstract_src_ = this;
-	data_.ring_buffer_ = new BlockingRingBuffer(BUFF_SIZE);
+	data_ = new AbstractSrcHelpers::Data;
+
+	RingSrcHelpers::Data *temp = new RingSrcHelpers::Data;
+	temp->abstract_src_ = this;
+	temp->ring_buffer_ = new BlockingRingBuffer(BUFF_SIZE);
+
+	data_->src_data_ = temp;
+	data_->other_data_ = NULL;
 }
 
 RingSrc::~RingSrc() {
-	data_.abstract_src_ = NULL;
-	delete data_.ring_buffer_;
+	delete RING_SRC_DATA_CAST(data_->src_data_)->ring_buffer_;
+	delete RING_SRC_DATA_CAST(data_->src_data_);
+	delete data_;
 }
 
 const char *RingSrc::GetName() {
@@ -84,18 +91,19 @@ static void StopFeed(GstElement *pipeline, gpointer container_ptr) {
 	}
 }
 
-void RingSrc::InitSrc(AbstractSrcHelpers::Data *ptr) {
-	data_.source_id_ = 0;
+void RingSrc::InitSrc(void *other_data) {
+	data_->other_data_ = other_data;
 
-	PlayerHelpers::Data *data = PLAYER_DATA_CAST(ptr->other_data_);
+	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_->other_data_);
+	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(data_->src_data_);
+
+	src_data->source_id_ = 0;
 
 	data->src_ = gst_element_factory_make(GetName(), "src");
 	g_assert(data->src_);
 
-	ptr->src_data_ = &data_;
-
-	g_signal_connect(data->src_, "need-data", G_CALLBACK(StartFeed), ptr);
-	g_signal_connect(data->src_, "enough-data", G_CALLBACK(StopFeed), ptr);
+	g_signal_connect(data->src_, "need-data", G_CALLBACK(StartFeed), data_);
+	g_signal_connect(data->src_, "enough-data", G_CALLBACK(StopFeed), data_);
 
 	gst_app_src_set_max_bytes(GST_APP_SRC(data->src_), APP_SRC_BUFF_SIZE);
 }
@@ -150,9 +158,9 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 }
 
 void RingSrc::Write(float *buffer, size_t length) {
-	data_.ring_buffer_->WriteInto(buffer, length);
+	RING_SRC_DATA_CAST(data_->src_data_)->ring_buffer_->WriteInto(buffer, length);
 }
 
 void RingSrc::LastFrame() {
-	data_.ring_buffer_->LastFrame();
+	RING_SRC_DATA_CAST(data_->src_data_)->ring_buffer_->LastFrame();
 }

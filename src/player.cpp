@@ -121,12 +121,7 @@ void Player::Process() {
 	it = abstract_sinks_.begin();
 
 	while(it != abstract_sinks_.end()) {
-		AbstractSinkHelpers::Data *data = g_new0(AbstractSinkHelpers::Data, 1);
-
-		data->sink_data_ = NULL;
-		data->other_data_ = &data_;
-
-		(*it)->Finish(data);
+		(*it)->Finish();
 		it = abstract_sinks_.erase(it);
 	}
 
@@ -157,12 +152,7 @@ void Player::ConstructObjects() {
 void Player::SetPropeties() {
 	GstBus *bus;
 
-	AbstractSrcHelpers::Data data;
-
-	data.src_data_ = NULL;
-	data.other_data_ = &data_;
-
-	abstract_src_->InitSrc(&data);
+	abstract_src_->InitSrc(&data_);
 
 	gst_bin_add_many(GST_BIN(data_.pipeline_),
 			data_.src_,
@@ -191,12 +181,7 @@ void Player::SetTagsFilters() {
 }
 
 AbstractSink *Player::AddSink(AbstractSink *sink) {
-	AbstractSinkHelpers::Data data;
-
-	data.sink_data_ = NULL;
-	data.other_data_ = &data_;
-
-	sink->InitSink(&data);
+	sink->InitSink(&data_);
 	abstract_sinks_.push_back(sink);
 
 	return sink;
@@ -207,14 +192,7 @@ void Player::RemoveSink(AbstractSink *sink) {
 	it = abstract_sinks_.begin();
 	while(it != abstract_sinks_.end()) {
 		if(*it == sink) {
-			AbstractSink *s = *it;
-
-			AbstractSinkHelpers::Data *data = g_new0(AbstractSinkHelpers::Data, 1);
-
-			data->sink_data_ = NULL;
-			data->other_data_ = &data_;
-
-			s->Finish(data);
+			(*it)->Finish();
 			abstract_sinks_.erase(it);
 
 			if(!abstract_sinks_.size())

@@ -8,8 +8,8 @@
 #ifndef SRC_RING_SRC_H_
 #define SRC_RING_SRC_H_
 
-#define RING_DATA_CAST(x) ((RingSrc *)x)
-#define RING_SRC_DATA_CAST(x) ((RingSrcHelpers::Data *)x)
+#define RING_DATA_CAST(X) ((RingSrc *)X)
+#define RING_SRC_DATA_CAST(X) ((RingSrcHelpers::Data *)X)
 
 #include "abstract_src.h"
 #include "blocking_ring_buffer.h"
@@ -33,7 +33,7 @@ public:
 	RingSrc(float threshold);
 	virtual ~RingSrc();
 
-	void InitSrc(AbstractSrcHelpers::Data *);
+	void InitSrc(void *);
 	const char *GetName();
 
 	float DecrementRatio(void *);
@@ -46,7 +46,7 @@ public:
 	void LastFrame();
 
 private:
-	RingSrcHelpers::Data data_;
+	AbstractSrcHelpers::Data *data_;
 
 	float threshold_;	//relative to 1.0
 	float current_ratio_;

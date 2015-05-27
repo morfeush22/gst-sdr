@@ -15,10 +15,12 @@ public:
 	FileSrc(const char *);
 	virtual ~FileSrc();
 
-	void InitSrc(AbstractSrcHelpers::Data *);
+	void InitSrc(void *);
 	const char *GetName();
 
 private:
+	AbstractSrcHelpers::Data *data_;
+
 	const char *path_;
 
 };

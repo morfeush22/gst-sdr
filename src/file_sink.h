@@ -8,8 +8,8 @@
 #ifndef SRC_FILE_SINK_H_
 #define SRC_FILE_SINK_H_
 
-#define FILE_SINK_CAST(x) ((FileSink *)x)
-#define FILE_SINK_DATA_CAST(x) ((FileSinkHelpers::Data *)x)
+#define FILE_SINK_CAST(X) ((FileSink *)X)
+#define FILE_SINK_DATA_CAST(X) ((FileSinkHelpers::Data *)X)
 
 #include "abstract_sink.h"
 #include <gst/gst.h>
@@ -33,9 +33,9 @@ public:
 	FileSink(const char *);
 	virtual ~FileSink();
 
-	virtual void InitSink(AbstractSinkHelpers::Data *);
+	virtual void InitSink(void *);
 	const char *GetName() const;
-	void Finish(AbstractSinkHelpers::Data *);
+	void Finish();
 	bool IsLinked() const;
 
 protected:
@@ -43,7 +43,7 @@ protected:
 	bool linked_;
 
 private:
-	FileSinkHelpers::Data data_;
+	AbstractSinkHelpers::Data *data_;
 
 };
 
