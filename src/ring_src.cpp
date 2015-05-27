@@ -11,8 +11,8 @@
 
 #define RESOLUTION 0.001
 #define BUFF_SIZE 960000	//960kB
-#define BUFF_CHUNK 9600
-#define APP_SRC_BUFF_SIZE 1000*25	//25kB, size of internal appsrc buffer
+#define BUFF_CHUNK 9600	//9.6kB
+#define APP_SRC_BUFF_SIZE 25000	//25kB, size of internal appsrc buffer
 
 RingSrc::RingSrc(float threshold):
 threshold_(threshold),

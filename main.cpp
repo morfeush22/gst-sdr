@@ -42,7 +42,7 @@ static gboolean RemCb(gpointer data) {
 	return FALSE;
 }
 
-#define BYTES 96000
+#define BYTES 96000	//96kB
 
 static FileWrapper *file_wrapper = new FileWrapper("./player_unittest_file.aac", BYTES);
 static const char *const *start = file_wrapper->GetCurrentChunkPointer();
@@ -58,6 +58,7 @@ static void *ReadingThread(void *data) {
 
 		sleep(1);
 	}
+	return NULL;
 }
 
 int main() {
@@ -66,7 +67,7 @@ int main() {
 
 	RingSrc *src = new RingSrc(0.01);
 	PulseSink *sink = new PulseSink();
-	FileSink *new_sink = new FileSink("./test.raw");
+	//FileSink *new_sink = new FileSink("./test.raw");
 
 	pthread_attr_init(&attr) ;
 	pthread_create(&thread, &attr, ReadingThread, src) ;
