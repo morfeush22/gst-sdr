@@ -8,6 +8,8 @@
 #include "pulse_sink.h"
 #include "player.h"
 
+#define QUEUE_BUFF_SIZE 1800	//1.8kB
+
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data);
@@ -83,6 +85,8 @@ void PulseSink::InitSink(void *other_data) {
 
 	sink_data->sink = gst_element_factory_make(get_name(), buff);
 	g_assert(sink_data->sink);
+
+	g_object_set(sink_data->queue, "max-size-bytes", QUEUE_BUFF_SIZE, NULL);
 
 	sink_data->removing = false;
 

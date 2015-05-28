@@ -9,12 +9,12 @@
 #include "ring_src.h"
 #include <gst/app/app.h>
 
-#define RESOLUTION 0.001	//resolution of pitch increments/decrements
-#define BOUND 0.1	//upper/lower bound of playback speed, relative to 1.0
+#define RESOLUTION 0.01	//resolution of pitch increments/decrements
+#define BOUND 0.8	//upper/lower bound of playback speed, relative to 1.0
 
-#define BUFF_CHUNK 9600	//9.6kB
-#define BUFF_SIZE BUFF_CHUNK*100	//960kB, should be multiple of BUFF_CHUNK
-#define APP_SRC_BUFF_SIZE 25000	//25kB, size of internal appsrc buffer
+#define BUFF_CHUNK 900	//0.9kB
+#define BUFF_SIZE (BUFF_CHUNK*1000)	//900kB, should be multiple of BUFF_CHUNK
+#define APP_SRC_BUFF_SIZE 1800	//1.8kB, size of internal appsrc buffer
 
 RingSrc::RingSrc(float threshold):
 threshold_(threshold),
@@ -139,23 +139,26 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(ptr->other_data);
 	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(ptr->src_data);
 
-	//g_print("current: %lu - size: %d - lesser: %lu - upper: %lu\n", src_data->ring_buffer->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_));
+	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu\n", src_data->ring_buffer->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_));
 
 	if(data->ready) {
 		float ratio;
 
 		if(src_data->ring_buffer->DataStored()<ParseThreshold(0.5-threshold_)) {
 			ratio = DecrementRatio(data->player);
-			//g_warning("current ratio: %f\n", ratio);
+			g_warning("current ratio: %f\n", ratio);
 			return;
 		}
 
 		if(src_data->ring_buffer->DataStored()>ParseThreshold(0.5+threshold_)) {
 			ratio = IncrementRatio(data->player);
-			//g_warning("current ratio: %f\n", ratio);
+			g_warning("current ratio: %f\n", ratio);
 			return;
 		}
 	}
+
+	if(src_data->ring_buffer->DataStored()>ParseThreshold(0.5))
+		data->ready = TRUE;
 }
 
 void RingSrc::Write(char *buffer, size_t length) {

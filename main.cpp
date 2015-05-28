@@ -40,7 +40,7 @@ static gboolean RemCb(gpointer data) {
 	return FALSE;
 }
 
-#define BYTES 96000	//96kB
+#define BYTES 1800*10	//1.8kB
 
 static FileWrapper *file_wrapper = new FileWrapper("./player_unittest_file.aac", BYTES);
 static const char *const *start = file_wrapper->GetCurrentChunkPointer();
@@ -54,7 +54,9 @@ static void *ReadingThread(void *data) {
 
 		src->Write(curr_ptr, size);
 
-		sleep(1);
+		printf("##### WRITE #####\n");
+
+		usleep(700000);	//0.7s
 	}
 	return NULL;
 }
@@ -65,7 +67,7 @@ int main() {
 	pthread_t thread;
 	pthread_attr_t attr;
 
-	RingSrc *src = new RingSrc(0.2);
+	RingSrc *src = new RingSrc(0.01);
 	PulseSink *sink = new PulseSink();
 	FileSink *new_sink = new FileSink("./test.raw");
 
@@ -79,8 +81,8 @@ int main() {
 	data.player = &player;
 	data.sink = new_sink;
 
-	g_timeout_add_seconds(1, AddCb, &data);
-	g_timeout_add_seconds(5, RemCb, &data);
+	//g_timeout_add_seconds(1, AddCb, &data);
+	//g_timeout_add_seconds(5, RemCb, &data);
 
 	player.Process();
 
