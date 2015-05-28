@@ -10,8 +10,10 @@
 #include <gst/app/app.h>
 
 #define RESOLUTION 0.001
-#define BUFF_SIZE 960000	//960kB
+#define BOUND 0.1
+
 #define BUFF_CHUNK 9600	//9.6kB
+#define BUFF_SIZE BUFF_CHUNK*100	//960kB
 #define APP_SRC_BUFF_SIZE 25000	//25kB, size of internal appsrc buffer
 
 RingSrc::RingSrc(float threshold):
@@ -109,8 +111,8 @@ void RingSrc::InitSrc(void *other_data) {
 
 float RingSrc::DecrementRatio(void *player_ptr) {
 	current_ratio_ -= RESOLUTION;
-	if(current_ratio_<(1-threshold_))
-		current_ratio_ = 1-threshold_;
+	if(current_ratio_<(1-BOUND))
+		current_ratio_ = 1-BOUND;
 
 	Player *player = static_cast<Player *>(player_ptr);
 	player->SetPlaybackSpeed(current_ratio_);
@@ -120,8 +122,8 @@ float RingSrc::DecrementRatio(void *player_ptr) {
 
 float RingSrc::IncrementRatio(void *player_ptr) {
 	current_ratio_ += RESOLUTION;
-	if(current_ratio_>(1+threshold_))
-		current_ratio_ = 1+threshold_;
+	if(current_ratio_>(1+BOUND))
+		current_ratio_ = 1+BOUND;
 
 	Player *player = static_cast<Player *>(player_ptr);
 	player->SetPlaybackSpeed(current_ratio_);

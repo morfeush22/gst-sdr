@@ -65,7 +65,7 @@ int main() {
 	pthread_t thread;
 	pthread_attr_t attr;
 
-	RingSrc *src = new RingSrc(0.01);
+	RingSrc *src = new RingSrc(0.2);
 	PulseSink *sink = new PulseSink();
 	//FileSink *new_sink = new FileSink("./test.raw");
 
