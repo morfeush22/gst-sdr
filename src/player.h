@@ -53,7 +53,6 @@ public:
 	/**
 	 * Play audio
 	 * @param *src pointer to AbstractSrc object
-	 * @param *sink pointer to AbstractSink object
 	 */
 	Player(AbstractSrc *);
 	virtual ~Player();

@@ -35,17 +35,16 @@ public:
 	FakeSink();
 	virtual ~FakeSink();
 
-	uint32_t bytes_returned();
+	const uint32_t bytes_returned() const;
 	void AddBytes(uint32_t);
 
 	void InitSink(void *);
-	const char *get_name() const;
+	const char *name() const;
 	void Finish();
 	bool linked() const;
 
-	uint32_t num_src_pads();
 	void DecrementCount();
-
+	const uint32_t num_src_pads() const;
 	const float playback_speed() const;
 
 private:

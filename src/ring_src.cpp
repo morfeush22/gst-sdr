@@ -35,7 +35,7 @@ RingSrc::~RingSrc() {
 	delete data_;
 }
 
-const char *RingSrc::get_name() {
+const char *RingSrc::name() const {
 	return "appsrc";
 }
 
@@ -100,7 +100,7 @@ void RingSrc::InitSrc(void *other_data) {
 
 	src_data->source_id = 0;
 
-	data->src = gst_element_factory_make(get_name(), "src");
+	data->src = gst_element_factory_make(name(), "src");
 	g_assert(data->src);
 
 	g_signal_connect(data->src, "need-data", G_CALLBACK(StartFeed), data_);
@@ -156,15 +156,12 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 			return;
 		}
 	}
-
-	if(src_data->ring_buffer->DataStored()>ParseThreshold(0.5))
-		data->ready = TRUE;
 }
 
 void RingSrc::Write(char *buffer, size_t length) {
 	RING_SRC_DATA_CAST(data_->src_data)->ring_buffer->WriteInto(buffer, length);
 }
 
-void RingSrc::set_last_frame() {
-	RING_SRC_DATA_CAST(data_->src_data)->ring_buffer->set_last_frame();
+void RingSrc::set_last_frame(bool to) {
+	RING_SRC_DATA_CAST(data_->src_data)->ring_buffer->set_last_frame(to);
 }

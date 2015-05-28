@@ -24,12 +24,12 @@ void FileSrc::InitSrc(void *other_data) {
 
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_->other_data);
 
-	data->src = gst_element_factory_make(get_name(), "src");
+	data->src = gst_element_factory_make(name(), "src");
 	g_assert(data->src);
 
 	g_object_set(data->src, "location", path_, NULL);
 }
 
-const char *FileSrc::get_name() {
+const char *FileSrc::name() const {
 	return "filesrc";
 }

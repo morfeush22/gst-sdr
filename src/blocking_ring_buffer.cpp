@@ -19,23 +19,23 @@ BlockingRingBuffer::~BlockingRingBuffer() {
 	pthread_mutex_destroy(&count_mutex_);
 }
 
-size_t BlockingRingBuffer::ReadFrom(char *dest_buffer, size_t number_to_write) {
+size_t BlockingRingBuffer::ReadFrom(char *dest_buffer, size_t how_many) {
 	pthread_mutex_lock(&count_mutex_);
 
 	while(!DataStored() && !last_frame_)
 		pthread_cond_wait(&count_condition_not_empty_, &count_mutex_);
 
-	size_t result = buffer_.ReadFrom(dest_buffer, number_to_write);
+	size_t result = buffer_.ReadFrom(dest_buffer, how_many);
 
 	pthread_mutex_unlock(&count_mutex_);
 
 	return result;
 }
 
-size_t BlockingRingBuffer::WriteInto(char *source_buffer, size_t number_to_write) {
+size_t BlockingRingBuffer::WriteInto(char *source_buffer, size_t how_many) {
 	pthread_mutex_lock(&count_mutex_);
 
-	size_t result = buffer_.WriteInto(source_buffer, number_to_write);
+	size_t result = buffer_.WriteInto(source_buffer, how_many);
 
 	pthread_cond_signal(&count_condition_not_empty_);
 	pthread_mutex_unlock(&count_mutex_);
@@ -51,6 +51,6 @@ size_t BlockingRingBuffer::DataStored() {
 	return buffer_.DataStored();
 }
 
-void BlockingRingBuffer::set_last_frame() {
-	last_frame_ = true;
+void BlockingRingBuffer::set_last_frame(bool to) {
+	last_frame_ = to;
 }

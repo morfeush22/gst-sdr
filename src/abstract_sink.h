@@ -26,7 +26,7 @@ public:
 	AbstractSink();
 
 	virtual void InitSink(void *other_data) = 0;
-	virtual const char *get_name() const = 0;
+	virtual const char *name() const = 0;
 	virtual void Finish() = 0;
 	virtual bool linked() const = 0;
 

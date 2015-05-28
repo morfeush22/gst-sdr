@@ -66,7 +66,7 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 
 	case GST_MESSAGE_ASYNC_DONE: {
 		g_print ("GStreamer: prerolled, lock'n'load\n");
-		//data->ready = TRUE;
+		data->ready = TRUE;
 		break;
 	}
 
@@ -124,7 +124,6 @@ void Player::Process() {
 	it = abstract_sinks_.begin();
 
 	while(it != abstract_sinks_.end()) {
-		//(*it)->Finish();
 		it = abstract_sinks_.erase(it);
 	}
 

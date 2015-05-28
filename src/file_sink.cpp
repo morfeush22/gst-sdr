@@ -73,16 +73,16 @@ void FileSink::InitSink(void *other_data) {
 
 	char buff[100];
 
-	strcpy(buff, get_name());
+	strcpy(buff, name());
 	strcat(buff, "_queue");
 
 	sink_data->queue = gst_element_factory_make("queue", buff);
 	g_assert(sink_data->queue);
 
-	strcpy(buff, get_name());
+	strcpy(buff, name());
 	strcat(buff, "_sink");
 
-	sink_data->sink = gst_element_factory_make(get_name(), buff);
+	sink_data->sink = gst_element_factory_make(name(), buff);
 	g_assert(sink_data->sink);
 
 	g_object_set(sink_data->sink, "location", path_, NULL);
@@ -113,7 +113,7 @@ void FileSink::InitSink(void *other_data) {
 	sink_data->linked = true;
 }
 
-const char *FileSink::get_name() const {
+const char *FileSink::name() const {
 	return "filesink";
 }
 

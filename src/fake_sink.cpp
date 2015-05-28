@@ -66,7 +66,7 @@ FakeSink::~FakeSink() {
 	delete data_;
 }
 
-uint32_t FakeSink::bytes_returned() {
+const uint32_t FakeSink::bytes_returned() const {
 	return bytes_returned_;
 }
 
@@ -93,18 +93,18 @@ void FakeSink::InitSink(void *other_data) {
 	sprintf(count_buff, "%d", count_);
 	count_buff[2] = '\0';
 
-	strcpy(buff, get_name());
+	strcpy(buff, name());
 	strcat(buff, "_queue_");
 	strcat(buff, count_buff);
 
 	sink_data->queue = gst_element_factory_make("queue", buff);
 	g_assert(sink_data->queue);
 
-	strcpy(buff, get_name());
+	strcpy(buff, name());
 	strcat(buff, "_sink_");
 	strcat(buff, count_buff);
 
-	sink_data->sink = gst_element_factory_make(get_name(), buff);
+	sink_data->sink = gst_element_factory_make(name(), buff);
 	g_assert(sink_data->sink);
 
 	g_object_set(sink_data->sink, "signal-handoffs", TRUE, NULL);
@@ -140,7 +140,7 @@ void FakeSink::AddBytes(uint32_t bytes) {
 	bytes_returned_ += bytes;
 }
 
-const char *FakeSink::get_name() const {
+const char *FakeSink::name() const {
 	return "fakesink";
 }
 
@@ -156,7 +156,7 @@ bool FakeSink::linked() const {
 	return FAKE_SINK_DATA_CAST(data_->sink_data)->linked;
 }
 
-uint32_t FakeSink::num_src_pads() {
+const uint32_t FakeSink::num_src_pads() const {
 	gint num;
 	g_object_get(G_OBJECT(PLAYER_DATA_CAST(data_->other_data)->tee), "num-src-pads", &num, NULL);
 	return num;

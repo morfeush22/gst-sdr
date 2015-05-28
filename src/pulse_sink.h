@@ -35,7 +35,7 @@ public:
 	virtual ~PulseSink();
 
 	void InitSink(void *);
-	const char *get_name() const;
+	const char *name() const;
 	void Finish();
 	bool linked() const;
 

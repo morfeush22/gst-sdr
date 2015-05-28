@@ -26,7 +26,7 @@ public:
 	virtual ~AbstractSrc();
 
 	virtual void InitSrc(void *other_data) = 0;
-	virtual const char *get_name() = 0;
+	virtual const char *name() const = 0;
 
 };
 

@@ -34,7 +34,7 @@ public:
 	virtual ~RingSrc();
 
 	void InitSrc(void *);
-	const char *get_name();
+	const char *name() const;
 
 	float DecrementRatio(void *);
 	float IncrementRatio(void *);
@@ -43,7 +43,7 @@ public:
 	void ProcessThreshold(AbstractSrcHelpers::Data *);
 
 	void Write(char *, size_t);
-	void set_last_frame();
+	void set_last_frame(bool);
 
 private:
 	AbstractSrcHelpers::Data *data_;

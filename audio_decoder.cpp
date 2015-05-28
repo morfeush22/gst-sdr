@@ -34,7 +34,7 @@ void AudioDecoder::Write(char *buffer, size_t length) {
 }
 
 void AudioDecoder::LastFrame() {
-	src_->set_last_frame();
+	src_->set_last_frame(true);
 }
 
 void AudioDecoder::Process() {

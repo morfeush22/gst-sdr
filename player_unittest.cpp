@@ -3,7 +3,6 @@
 #include "src/file_src.h"
 #include "src/ring_src.h"
 #include "gtest/gtest.h"
-
 #include <fstream>
 #include <string>
 

@@ -74,16 +74,16 @@ void PulseSink::InitSink(void *other_data) {
 
 	char buff[100];
 
-	strcpy(buff, get_name());
+	strcpy(buff, name());
 	strcat(buff, "_queue");
 
 	sink_data->queue = gst_element_factory_make("queue", buff);
 	g_assert(sink_data->queue);
 
-	strcpy(buff, get_name());
+	strcpy(buff, name());
 	strcat(buff, "_sink");
 
-	sink_data->sink = gst_element_factory_make(get_name(), buff);
+	sink_data->sink = gst_element_factory_make(name(), buff);
 	g_assert(sink_data->sink);
 
 	g_object_set(sink_data->queue, "max-size-bytes", QUEUE_BUFF_SIZE, NULL);
@@ -114,7 +114,7 @@ void PulseSink::InitSink(void *other_data) {
 	sink_data->linked = true;
 }
 
-const char *PulseSink::get_name() const {
+const char *PulseSink::name() const {
 	return "pulsesink";
 }
 
