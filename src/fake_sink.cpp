@@ -58,8 +58,6 @@ linked_(false) {
 
 	data_->sink_data = temp;
 	data_->other_data = NULL;
-
-	count_ ++;
 }
 
 FakeSink::~FakeSink() {
@@ -74,6 +72,8 @@ uint32_t FakeSink::bytes_returned() {
 void FakeSink::InitSink(void *other_data) {
 	if(linked())
 		return;
+
+	count_ ++;
 
 	data_->other_data = other_data;
 
@@ -153,8 +153,16 @@ void FakeSink::Finish() {
 	}
 
 	gst_pad_add_probe(FAKE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data_, NULL);
+
+	count_ --;
 }
 
 bool FakeSink::linked() const {
 	return linked_;
+}
+
+uint32_t FakeSink::num_src_pads() {
+	gint num;
+	g_object_get(G_OBJECT(PLAYER_DATA_CAST(data_->other_data)->tee), "num-src-pads", &num, NULL);
+	return num;
 }

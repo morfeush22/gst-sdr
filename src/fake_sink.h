@@ -42,6 +42,8 @@ public:
 	void Finish();
 	bool linked() const;
 
+	uint32_t num_src_pads();
+
 private:
 	AbstractSinkHelpers::Data *data_;
 
