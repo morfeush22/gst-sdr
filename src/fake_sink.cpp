@@ -55,6 +55,7 @@ bytes_returned_(0) {
 
 	FakeSinkHelpers::Data *temp = new FakeSinkHelpers::Data;
 	temp->abstract_sink = this;
+	temp->linked = false;
 
 	data_->sink_data = temp;
 	data_->other_data = NULL;
@@ -163,4 +164,10 @@ uint32_t FakeSink::num_src_pads() {
 
 void FakeSink::DecrementCount() {
 	count_--;
+}
+
+const float FakeSink::playback_speed() const {
+	gfloat num;
+	g_object_get(G_OBJECT(PLAYER_DATA_CAST(data_->other_data)->pitch), "tempo", &num, NULL);
+	return num;
 }

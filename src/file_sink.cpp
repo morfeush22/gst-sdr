@@ -45,6 +45,7 @@ path_(path) {
 
 	FileSinkHelpers::Data *temp = new FileSinkHelpers::Data;
 	temp->abstract_sink = this;
+	temp->linked = false;
 
 	data_->sink_data = temp;
 	data_->other_data = NULL;

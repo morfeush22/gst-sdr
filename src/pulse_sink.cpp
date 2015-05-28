@@ -44,6 +44,7 @@ PulseSink::PulseSink() {
 
 	PulseSinkHelpers::Data *temp = new PulseSinkHelpers::Data;
 	temp->abstract_sink = this;
+	temp->linked = false;
 
 	data_->sink_data = temp;
 	data_->other_data = NULL;

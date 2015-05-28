@@ -46,6 +46,8 @@ public:
 	uint32_t num_src_pads();
 	void DecrementCount();
 
+	const float playback_speed() const;
+
 private:
 	AbstractSinkHelpers::Data *data_;
 
