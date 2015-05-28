@@ -28,22 +28,22 @@ struct CmpStr {
 };
 
 struct Data {
-	void *player_;
+	void *player;
 
-	GstElement *pipeline_;
+	GstElement *pipeline;
 
-	GstElement *src_;
-	GstElement *iddemux_;
-	GstElement *decoder_;
-	GstElement *parser_;
-	GstElement *pitch_;
-	GstElement *converter_;
-	GstElement *tee_;
+	GstElement *src;
+	GstElement *iddemux;
+	GstElement *decoder;
+	GstElement *parser;
+	GstElement *pitch;
+	GstElement *converter;
+	GstElement *tee;
 
-	GMainLoop *loop_;
+	GMainLoop *loop;
 
-	std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map_;
-	gboolean ready_;
+	std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map;
+	gboolean ready;
 };
 
 }
@@ -67,7 +67,7 @@ public:
 	 * Get source
 	 * @return current AbstractSrc object
 	 */
-	const AbstractSrc *GetSrc() const;
+	const AbstractSrc *abstract_src() const;
 
 	/**
 	 * Remove sink
@@ -77,7 +77,7 @@ public:
 	/**
 	 * Set playback speed
 	 */
-	void SetPlaybackSpeed(float);
+	void set_playback_speed(float);
 
 	/**
 	 * Add new sink
@@ -85,7 +85,7 @@ public:
 	 */
 	AbstractSink *AddSink(AbstractSink *);
 
-	const std::map<const char *, char *, PlayerHelpers::CmpStr> *GetTagsMap() const;
+	const std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map() const;
 
 private:
 	PlayerHelpers::Data data_;

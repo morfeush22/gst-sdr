@@ -19,11 +19,11 @@
 namespace RingSrcHelpers {
 
 struct Data {
-	void *abstract_src_;
+	void *abstract_src;
 
-	BlockingRingBuffer *ring_buffer_;
+	BlockingRingBuffer *ring_buffer;
 
-	guint source_id_;
+	guint source_id;
 };
 
 }
@@ -34,7 +34,7 @@ public:
 	virtual ~RingSrc();
 
 	void InitSrc(void *);
-	const char *GetName();
+	const char *get_name();
 
 	float DecrementRatio(void *);
 	float IncrementRatio(void *);
@@ -43,7 +43,7 @@ public:
 	void ProcessThreshold(AbstractSrcHelpers::Data *);
 
 	void Write(char *, size_t);
-	void LastFrame();
+	void set_last_frame();
 
 private:
 	AbstractSrcHelpers::Data *data_;

@@ -59,6 +59,8 @@ static void *ReadingThread(void *data) {
 	return NULL;
 }
 
+uint16_t FakeSink::count_ = 0;
+
 int main() {
 	pthread_t thread;
 	pthread_attr_t attr;

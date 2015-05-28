@@ -11,8 +11,8 @@
 FileSrc::FileSrc(const char *path): path_(path) {
 	data_ = new AbstractSrcHelpers::Data;
 
-	data_->src_data_ = this;
-	data_->other_data_ = NULL;
+	data_->src_data = this;
+	data_->other_data = NULL;
 }
 
 FileSrc::~FileSrc() {
@@ -20,16 +20,16 @@ FileSrc::~FileSrc() {
 }
 
 void FileSrc::InitSrc(void *other_data) {
-	data_->other_data_ = other_data;
+	data_->other_data = other_data;
 
-	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_->other_data_);
+	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_->other_data);
 
-	data->src_ = gst_element_factory_make(GetName(), "src");
-	g_assert(data->src_);
+	data->src = gst_element_factory_make(get_name(), "src");
+	g_assert(data->src);
 
-	g_object_set(data->src_, "location", path_, NULL);
+	g_object_set(data->src, "location", path_, NULL);
 }
 
-const char *FileSrc::GetName() {
+const char *FileSrc::get_name() {
 	return "filesrc";
 }

@@ -20,7 +20,7 @@ BlockingRingBuffer::~BlockingRingBuffer() {
 }
 
 size_t BlockingRingBuffer::ReadFrom(char *dest_buffer, size_t number_to_write) {
-	int err = pthread_mutex_lock(&count_mutex_);
+	pthread_mutex_lock(&count_mutex_);
 
 	while(!DataStored() && !last_frame_)
 		pthread_cond_wait(&count_condition_not_empty_, &count_mutex_);
@@ -51,6 +51,6 @@ size_t BlockingRingBuffer::DataStored() {
 	return buffer_.DataStored();
 }
 
-void BlockingRingBuffer::LastFrame() {
+void BlockingRingBuffer::set_last_frame() {
 	last_frame_ = true;
 }

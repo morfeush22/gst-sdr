@@ -15,7 +15,7 @@ static void SaveTags(const GstTagList *list, const gchar *tag, gpointer data_ptr
 	gint count = gst_tag_list_get_tag_size(list, tag);
 
 	for(gint i = 0; i < count; i++) {
-		if((it = data->tags_map_->find(gst_tag_get_nick(tag))) != data->tags_map_->end()) {
+		if((it = data->tags_map->find(gst_tag_get_nick(tag))) != data->tags_map->end()) {
 			if(gst_tag_get_type(tag) == G_TYPE_STRING)
 				gst_tag_list_get_string_index(list, tag, i, &it->second);
 			else {
@@ -48,7 +48,7 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 		g_error_free(err);
 
 		g_free(debug);
-		g_main_loop_quit(data->loop_);
+		g_main_loop_quit(data->loop);
 		break;
 	}
 
@@ -66,7 +66,7 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 
 	case GST_MESSAGE_ASYNC_DONE: {
 		g_print ("GStreamer: prerolled, lock'n'load\n");
-		data->ready_ = TRUE;
+		data->ready = TRUE;
 		break;
 	}
 
@@ -82,7 +82,7 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 	}
 
 	case GST_MESSAGE_EOS:
-		g_main_loop_quit(data->loop_);
+		g_main_loop_quit(data->loop);
 		break;
 
 	default:
@@ -96,15 +96,15 @@ Player::Player(AbstractSrc *src):
 abstract_src_(src) {
 	gst_init (NULL, NULL);
 
-	data_.tags_map_ = new std::map<const char *, char *, PlayerHelpers::CmpStr>;
-	data_.player_ = this;
-	data_.ready_ = FALSE;
+	data_.tags_map = new std::map<const char *, char *, PlayerHelpers::CmpStr>;
+	data_.player = this;
+	data_.ready = FALSE;
 
 	Init();
 }
 
 Player::~Player() {
-	delete data_.tags_map_;
+	delete data_.tags_map;
 }
 
 void Player::Process() {
@@ -113,12 +113,12 @@ void Player::Process() {
 		return;
 	}
 
-	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline_), GST_STATE_PLAYING);
-	data_.loop_ = g_main_loop_new(NULL, FALSE);
-	g_main_loop_run(data_.loop_);
+	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline), GST_STATE_PLAYING);
+	data_.loop = g_main_loop_new(NULL, FALSE);
+	g_main_loop_run(data_.loop);
 
-	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline_), GST_STATE_NULL);
-	gst_object_unref(data_.pipeline_);
+	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline), GST_STATE_NULL);
+	gst_object_unref(data_.pipeline);
 
 	std::list<AbstractSink *>::iterator it;
 	it = abstract_sinks_.begin();
@@ -128,28 +128,28 @@ void Player::Process() {
 		it = abstract_sinks_.erase(it);
 	}
 
-	data_.ready_ = FALSE;
+	data_.ready = FALSE;
 }
 
 void Player::ConstructObjects() {
-	data_.pipeline_ = gst_pipeline_new("player");
+	data_.pipeline = gst_pipeline_new("player");
 
-	data_.iddemux_ = gst_element_factory_make("id3demux", "tag_demuxer");
-	data_.decoder_ = gst_element_factory_make("faad", "decoder");
-	data_.parser_ = gst_element_factory_make("aacparse", "parser");
+	data_.iddemux = gst_element_factory_make("id3demux", "tag_demuxer");
+	data_.decoder = gst_element_factory_make("faad", "decoder");
+	data_.parser = gst_element_factory_make("aacparse", "parser");
 
-	data_.pitch_ = gst_element_factory_make("pitch", "pitch");
-	data_.converter_ = gst_element_factory_make("audioconvert", "converter");
+	data_.pitch = gst_element_factory_make("pitch", "pitch");
+	data_.converter = gst_element_factory_make("audioconvert", "converter");
 
-	data_.tee_ = gst_element_factory_make("tee", "tee");
+	data_.tee = gst_element_factory_make("tee", "tee");
 
-	g_assert(data_.pipeline_
-			&& data_.iddemux_
-			&& data_.decoder_
-			&& data_.parser_
-			&& data_.pitch_
-			&& data_.converter_
-			&& data_.tee_);	//check if all elements created
+	g_assert(data_.pipeline
+			&& data_.iddemux
+			&& data_.decoder
+			&& data_.parser
+			&& data_.pitch
+			&& data_.converter
+			&& data_.tee);	//check if all elements created
 }
 
 void Player::SetPropeties() {
@@ -157,17 +157,17 @@ void Player::SetPropeties() {
 
 	abstract_src_->InitSrc(&data_);
 
-	gst_bin_add_many(GST_BIN(data_.pipeline_),
-			data_.src_,
-			data_.iddemux_,
-			data_.decoder_,
-			data_.parser_,
-			data_.pitch_,
-			data_.converter_,
-			data_.tee_,
+	gst_bin_add_many(GST_BIN(data_.pipeline),
+			data_.src,
+			data_.iddemux,
+			data_.decoder,
+			data_.parser,
+			data_.pitch,
+			data_.converter,
+			data_.tee,
 			NULL);	//add elements to bin
 
-	bus = gst_element_get_bus(data_.pipeline_);
+	bus = gst_element_get_bus(data_.pipeline);
 	gst_bus_add_watch(bus, BusCall, &data_);
 
 	SetTagsFilters();
@@ -176,11 +176,11 @@ void Player::SetPropeties() {
 }
 
 void Player::SetTagsFilters() {
-	(*data_.tags_map_)[GST_TAG_TITLE] = NULL;
-	(*data_.tags_map_)[GST_TAG_ARTIST] = NULL;
-	(*data_.tags_map_)[GST_TAG_ALBUM] = NULL;
-	(*data_.tags_map_)[GST_TAG_GENRE] = NULL;
-	(*data_.tags_map_)[GST_TAG_DATE_TIME] = NULL;
+	(*data_.tags_map)[GST_TAG_TITLE] = NULL;
+	(*data_.tags_map)[GST_TAG_ARTIST] = NULL;
+	(*data_.tags_map)[GST_TAG_ALBUM] = NULL;
+	(*data_.tags_map)[GST_TAG_GENRE] = NULL;
+	(*data_.tags_map)[GST_TAG_DATE_TIME] = NULL;
 }
 
 AbstractSink *Player::AddSink(AbstractSink *sink) {
@@ -199,15 +199,15 @@ void Player::RemoveSink(AbstractSink *sink) {
 			abstract_sinks_.erase(it);
 
 			if(!abstract_sinks_.size())
-				gst_element_set_state(data_.pipeline_, GST_STATE_NULL);
+				gst_element_set_state(data_.pipeline, GST_STATE_NULL);
 			return;
 		}
 		it++;
 	}
 }
 
-const std::map<const char*, char*, PlayerHelpers::CmpStr> *Player::GetTagsMap() const {
-	return data_.tags_map_;
+const std::map<const char*, char*, PlayerHelpers::CmpStr> *Player::tags_map() const {
+	return data_.tags_map;
 }
 
 void Player::Init() {
@@ -217,21 +217,21 @@ void Player::Init() {
 }
 
 void Player::LinkElements() {
-	g_assert(gst_element_link_many(data_.src_,
-			data_.iddemux_,
-			data_.parser_,
-			data_.decoder_,
-			data_.converter_,
-			data_.pitch_,
-			data_.tee_,
+	g_assert(gst_element_link_many(data_.src,
+			data_.iddemux,
+			data_.parser,
+			data_.decoder,
+			data_.converter,
+			data_.pitch,
+			data_.tee,
 			NULL)
 	);	//link chain
 }
 
-const AbstractSrc *Player::GetSrc() const {
+const AbstractSrc *Player::abstract_src() const {
 	return abstract_src_;
 }
 
-void Player::SetPlaybackSpeed(float ratio) {
-	g_object_set(G_OBJECT(data_.pitch_), "tempo", ratio, NULL);
+void Player::set_playback_speed(float ratio) {
+	g_object_set(G_OBJECT(data_.pitch), "tempo", ratio, NULL);
 }

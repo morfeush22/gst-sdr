@@ -14,8 +14,8 @@
 namespace AbstractSinkHelpers {
 
 struct Data {
-	void *sink_data_;
-	void *other_data_;
+	void *sink_data;
+	void *other_data;
 };
 
 }
@@ -26,9 +26,9 @@ public:
 	AbstractSink();
 
 	virtual void InitSink(void *other_data) = 0;
-	virtual const char *GetName() const = 0;
+	virtual const char *get_name() const = 0;
 	virtual void Finish() = 0;
-	virtual bool IsLinked() const = 0;
+	virtual bool linked() const = 0;
 
 	bool operator ==(const AbstractSink &other) const;
 

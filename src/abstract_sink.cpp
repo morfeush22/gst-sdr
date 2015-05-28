@@ -15,5 +15,5 @@ AbstractSink::AbstractSink() {
 }
 
 bool AbstractSink::operator ==(const AbstractSink &other) const {
-	return !strcmp(GetName(), other.GetName());
+	return !strcmp(get_name(), other.get_name());
 }

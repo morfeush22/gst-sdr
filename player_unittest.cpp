@@ -26,7 +26,7 @@ TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 	player.AddSink(sink);
 	player.Process();
 
-	EXPECT_EQ(size, sink->GetBytesReturned());
+	EXPECT_EQ(size, sink->bytes_returned());
 
 	delete sink;
 	delete src;
@@ -47,8 +47,8 @@ TEST(PlayerTestTagsTest, tags_returned) {
 	string line;
 
 	while(getline(in_file, line)) {
-		it = player.GetTagsMap()->find(line.c_str());
-		ASSERT_TRUE(it != player.GetTagsMap()->end());
+		it = player.tags_map()->find(line.c_str());
+		ASSERT_TRUE(it != player.tags_map()->end());
 		getline(in_file, line);
 		EXPECT_FALSE(strcmp(it->second, line.c_str()));
 	}

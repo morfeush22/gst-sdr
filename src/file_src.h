@@ -16,7 +16,7 @@ public:
 	virtual ~FileSrc();
 
 	void InitSrc(void *);
-	const char *GetName();
+	const char *get_name();
 
 private:
 	AbstractSrcHelpers::Data *data_;

@@ -17,13 +17,13 @@
 namespace PulseSinkHelpers {
 
 struct Data {
-	void *abstract_sink_;
+	void *abstract_sink;
 
-	GstElement *queue_;
-	GstElement *sink_;
-	GstPad *teepad_;
+	GstElement *queue;
+	GstElement *sink;
+	GstPad *teepad;
 
-	gboolean removing_;
+	gboolean removing;
 };
 
 }
@@ -34,9 +34,9 @@ public:
 	virtual ~PulseSink();
 
 	void InitSink(void *);
-	const char *GetName() const;
+	const char *get_name() const;
 	void Finish();
-	bool IsLinked() const;
+	bool linked() const;
 
 private:
 	AbstractSinkHelpers::Data *data_;

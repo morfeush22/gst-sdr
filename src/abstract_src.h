@@ -14,8 +14,8 @@
 namespace AbstractSrcHelpers {
 
 struct Data {
-	void *src_data_;
-	void *other_data_;
+	void *src_data;
+	void *other_data;
 };
 
 }
@@ -26,7 +26,7 @@ public:
 	virtual ~AbstractSrc();
 
 	virtual void InitSrc(void *other_data) = 0;
-	virtual const char *GetName() = 0;
+	virtual const char *get_name() = 0;
 
 };
 

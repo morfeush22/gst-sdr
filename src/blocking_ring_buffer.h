@@ -22,7 +22,7 @@ public:
 	size_t FreeSpace();
 	size_t DataStored();
 
-	void LastFrame();
+	void set_last_frame();
 
 private:
 	RingBuffer<char> buffer_;
