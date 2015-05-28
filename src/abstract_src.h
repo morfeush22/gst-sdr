@@ -8,8 +8,8 @@
 #ifndef SRC_ABSTRACT_SRC_H_
 #define SRC_ABSTRACT_SRC_H_
 
-#define ABSTRACT_SRC_CAST(X) ((AbstractSrc *)X)
-#define ABSTRACT_SRC_DATA_CAST(X) ((AbstractSrcHelpers::Data *)X)
+#define ABSTRACT_SRC_CAST(X) (reinterpret_cast<AbstractSrc *>(X))
+#define ABSTRACT_SRC_DATA_CAST(X) (reinterpret_cast<AbstractSrcHelpers::Data *>(X))
 
 namespace AbstractSrcHelpers {
 

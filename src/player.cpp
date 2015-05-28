@@ -95,9 +95,11 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 Player::Player(AbstractSrc *src):
 abstract_src_(src) {
 	gst_init (NULL, NULL);
+
 	data_.tags_map_ = new std::map<const char *, char *, PlayerHelpers::CmpStr>;
 	data_.player_ = this;
 	data_.ready_ = FALSE;
+
 	Init();
 }
 
@@ -111,11 +113,11 @@ void Player::Process() {
 		return;
 	}
 
-	gst_element_set_state((GstElement *)(data_.pipeline_), GST_STATE_PLAYING);
+	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline_), GST_STATE_PLAYING);
 	data_.loop_ = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(data_.loop_);
 
-	gst_element_set_state((GstElement *)(data_.pipeline_), GST_STATE_NULL);
+	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline_), GST_STATE_NULL);
 	gst_object_unref(data_.pipeline_);
 
 	std::list<AbstractSink *>::iterator it;

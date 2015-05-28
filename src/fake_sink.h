@@ -8,8 +8,8 @@
 #ifndef SRC_FAKE_SINK_H_
 #define SRC_FAKE_SINK_H_
 
-#define FAKE_SINK_CAST(X) ((FakeSink *)X)
-#define FAKE_SINK_DATA_CAST(X) ((FakeSinkHelpers::Data *)X)
+#define FAKE_SINK_CAST(X) (reinterpret_cast<FakeSink *>(X))
+#define FAKE_SINK_DATA_CAST(X) (reinterpret_cast<FakeSinkHelpers::Data *>(X))
 
 #include "abstract_sink.h"
 #include <gst/gst.h>

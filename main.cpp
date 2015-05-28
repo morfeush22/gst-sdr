@@ -7,10 +7,8 @@
 #include "src/ring_src.h"
 #include "src/blocking_ring_buffer.h"
 #include "file_wrapper.h"
-#include <unistd.h>
-
 #include <iostream>
-#include <fstream>
+#include <unistd.h>
 
 using namespace std;
 

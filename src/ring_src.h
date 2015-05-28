@@ -8,8 +8,8 @@
 #ifndef SRC_RING_SRC_H_
 #define SRC_RING_SRC_H_
 
-#define RING_DATA_CAST(X) ((RingSrc *)X)
-#define RING_SRC_DATA_CAST(X) ((RingSrcHelpers::Data *)X)
+#define RING_SRC_CAST(X) (reinterpret_cast<RingSrc *>(X))
+#define RING_SRC_DATA_CAST(X) (reinterpret_cast<RingSrcHelpers::Data *>(X))
 
 #include "abstract_src.h"
 #include "blocking_ring_buffer.h"
@@ -48,7 +48,7 @@ public:
 private:
 	AbstractSrcHelpers::Data *data_;
 
-	float threshold_;	//relative to 1.0
+	float threshold_;	//relative to 0.5
 	float current_ratio_;
 
 };

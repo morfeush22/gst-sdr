@@ -13,7 +13,6 @@ AudioDecoder::AudioDecoder(float threshold) {
 
 	player_ = new Player(src_);
 	player_->AddSink(sink_);
-	player_->Process();
 }
 
 AudioDecoder::~AudioDecoder() {
@@ -30,10 +29,14 @@ AbstractSink *AudioDecoder::AddSink(AbstractSink *sink) {
 	return player_->AddSink(sink);
 }
 
-void AudioDecoder::Write(float *buffer, size_t length) {
+void AudioDecoder::Write(char *buffer, size_t length) {
 	src_->Write(buffer, length);
 }
 
 void AudioDecoder::LastFrame() {
 	src_->LastFrame();
+}
+
+void AudioDecoder::Process() {
+	player_->Process();
 }

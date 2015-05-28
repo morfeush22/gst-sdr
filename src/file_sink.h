@@ -8,8 +8,8 @@
 #ifndef SRC_FILE_SINK_H_
 #define SRC_FILE_SINK_H_
 
-#define FILE_SINK_CAST(X) ((FileSink *)X)
-#define FILE_SINK_DATA_CAST(X) ((FileSinkHelpers::Data *)X)
+#define FILE_SINK_CAST(X) (reinterpret_cast<FileSink *>(X))
+#define FILE_SINK_DATA_CAST(X) (reinterpret_cast<FileSinkHelpers::Data *>(X))
 
 #include "abstract_sink.h"
 #include <gst/gst.h>

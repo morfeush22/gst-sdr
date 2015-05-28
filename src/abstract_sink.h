@@ -8,8 +8,8 @@
 #ifndef SRC_ABSTRACT_SINK_H_
 #define SRC_ABSTRACT_SINK_H_
 
-#define ABSTRACT_SINK_CAST(X) ((AbstractSink *)X)
-#define ABSTRACT_SINK_DATA_CAST(X) ((AbstractSinkHelpers::Data *)X)
+#define ABSTRACT_SINK_CAST(X) (reinterpret_cast<AbstractSink *>(X))
+#define ABSTRACT_SINK_DATA_CAST(X) (reinterpret_cast<AbstractSinkHelpers::Data *>(X))
 
 namespace AbstractSinkHelpers {
 
