@@ -34,14 +34,13 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_element_release_request_pad(data->tee, sink_data->teepad);
 	gst_object_unref(sink_data->teepad);
 
-	FILE_SINK_CAST(sink_data->abstract_sink)->Finish();
+	sink_data->linked = false;
 
 	return GST_PAD_PROBE_REMOVE;
 }
 
 FileSink::FileSink(const char *path):
-path_(path),
-linked_(false) {
+path_(path) {
 	data_ = new AbstractSinkHelpers::Data;
 
 	FileSinkHelpers::Data *temp = new FileSinkHelpers::Data;
@@ -87,7 +86,7 @@ void FileSink::InitSink(void *other_data) {
 
 	g_object_set(sink_data->sink, "location", path_, NULL);
 
-	sink_data->removing = false;
+	sink_data->removing = FALSE;
 
 	gst_object_ref(sink_data->queue);
 	gst_object_ref(sink_data->sink);
@@ -110,7 +109,7 @@ void FileSink::InitSink(void *other_data) {
 	gst_pad_link(sink_data->teepad, sinkpad);
 	gst_object_unref(sinkpad);
 
-	linked_ = true;
+	sink_data->linked = true;
 }
 
 const char *FileSink::get_name() const {
@@ -118,17 +117,13 @@ const char *FileSink::get_name() const {
 }
 
 void FileSink::Finish() {
-	gboolean connected = gst_object_has_ancestor(reinterpret_cast<GstObject *>(FILE_SINK_DATA_CAST(data_->sink_data)->sink),
-				reinterpret_cast<GstObject *>(PLAYER_DATA_CAST(data_->other_data)->pipeline));
-
-	if(linked() && !connected) {
-		linked_ = false;
+	if(!linked()) {
 		return;
 	}
 
-	gst_pad_add_probe(FILE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data_, NULL);
+	gst_pad_add_probe(FILE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, data_, NULL);
 }
 
 bool FileSink::linked() const {
-	return linked_;
+	return FILE_SINK_DATA_CAST(data_->sink_data)->linked;
 }

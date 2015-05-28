@@ -67,7 +67,7 @@ int main() {
 
 	RingSrc *src = new RingSrc(0.2);
 	PulseSink *sink = new PulseSink();
-	//FileSink *new_sink = new FileSink("./test.raw");
+	FileSink *new_sink = new FileSink("./test.raw");
 
 	pthread_attr_init(&attr) ;
 	pthread_create(&thread, &attr, ReadingThread, src) ;
@@ -75,14 +75,12 @@ int main() {
 	Player player(src);
 	player.AddSink(sink);
 
-	/*
 	Data data;
 	data.player = &player;
 	data.sink = new_sink;
 
 	g_timeout_add_seconds(1, AddCb, &data);
 	g_timeout_add_seconds(5, RemCb, &data);
-	 */
 
 	player.Process();
 

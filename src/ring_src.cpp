@@ -139,20 +139,20 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(ptr->other_data);
 	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(ptr->src_data);
 
-	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu\n", src_data->ring_buffer->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_));
+	//g_print("current: %lu - size: %d - lesser: %lu - upper: %lu\n", src_data->ring_buffer->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_));
 
 	if(data->ready) {
 		float ratio;
 
 		if(src_data->ring_buffer->DataStored()<ParseThreshold(0.5-threshold_)) {
 			ratio = DecrementRatio(data->player);
-			g_warning("current ratio: %f\n", ratio);
+			//g_warning("current ratio: %f\n", ratio);
 			return;
 		}
 
 		if(src_data->ring_buffer->DataStored()>ParseThreshold(0.5+threshold_)) {
 			ratio = IncrementRatio(data->player);
-			g_warning("current ratio: %f\n", ratio);
+			//g_warning("current ratio: %f\n", ratio);
 			return;
 		}
 	}

@@ -111,3 +111,33 @@ TEST(PlayerTestAddSink, incrementation_of_sink_pads) {
 	delete sink3;
 	delete src;
 }
+
+TEST(PlayerTestRemoveSink, decrementation_of_sink_pads) {
+	uint32_t size;
+	ifstream in_file("./player_unittest_file.raw", ifstream::binary);
+	ASSERT_TRUE(in_file.good()) << "TESTING CODE FAILED... could not load data";
+
+	in_file.seekg(0, ios::end);
+	size = in_file.tellg();
+
+	in_file.close();
+
+	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	FakeSink *sink1 = new FakeSink();
+	FakeSink *sink2 = new FakeSink();
+	FakeSink *sink3 = new FakeSink();
+
+	Player player(src);
+	player.AddSink(sink1);
+	player.AddSink(sink2);
+	player.AddSink(sink3);
+
+	player.RemoveSink(sink3);
+
+	EXPECT_EQ(2, sink1->num_src_pads());
+
+	delete sink1;
+	delete sink2;
+	delete sink3;
+	delete src;
+}

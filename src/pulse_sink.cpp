@@ -34,13 +34,12 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_element_release_request_pad(data->tee, sink_data->teepad);
 	gst_object_unref(sink_data->teepad);
 
-	PULSE_SINK_CAST(sink_data->abstract_sink)->Finish();
+	sink_data->linked = false;
 
 	return GST_PAD_PROBE_REMOVE;
 }
 
-PulseSink::PulseSink():
-linked_(false) {
+PulseSink::PulseSink() {
 	data_ = new AbstractSinkHelpers::Data;
 
 	PulseSinkHelpers::Data *temp = new PulseSinkHelpers::Data;
@@ -107,7 +106,7 @@ void PulseSink::InitSink(void *other_data) {
 	gst_pad_link(sink_data->teepad, sinkpad);
 	gst_object_unref(sinkpad);
 
-	linked_ = true;
+	sink_data->linked = true;
 }
 
 const char *PulseSink::get_name() const {
@@ -115,17 +114,13 @@ const char *PulseSink::get_name() const {
 }
 
 void PulseSink::Finish() {
-	gboolean connected = gst_object_has_ancestor(reinterpret_cast<GstObject *>(PULSE_SINK_DATA_CAST(data_->sink_data)->sink),
-			reinterpret_cast<GstObject *>(PLAYER_DATA_CAST(data_->other_data)->pipeline));
-
-	if(linked() && !connected) {
-		linked_ = false;
+	if(!linked()) {
 		return;
 	}
 
-	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data_, NULL);
+	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, data_, NULL);
 }
 
 bool PulseSink::linked() const {
-	return linked_;
+	return PULSE_SINK_DATA_CAST(data_->sink_data)->linked;
 }

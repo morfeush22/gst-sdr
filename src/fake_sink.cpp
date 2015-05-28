@@ -35,7 +35,8 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_element_release_request_pad(data->tee, sink_data->teepad);
 	gst_object_unref(sink_data->teepad);
 
-	FAKE_SINK_CAST(sink_data->abstract_sink)->Finish();
+	sink_data->linked = false;
+	FAKE_SINK_CAST(sink_data->abstract_sink)->DecrementCount();
 
 	return GST_PAD_PROBE_REMOVE;
 }
@@ -49,8 +50,7 @@ static void SinkHandoffCall(GstElement *fakesink, GstBuffer *buffer, GstPad *pad
 }
 
 FakeSink::FakeSink():
-bytes_returned_(0),
-linked_(false) {
+bytes_returned_(0) {
 	data_ = new AbstractSinkHelpers::Data;
 
 	FakeSinkHelpers::Data *temp = new FakeSinkHelpers::Data;
@@ -132,7 +132,7 @@ void FakeSink::InitSink(void *other_data) {
 	gst_pad_link(sink_data->teepad, sinkpad);
 	gst_object_unref(sinkpad);
 
-	linked_ = true;
+	sink_data->linked = true;
 }
 
 void FakeSink::AddBytes(uint32_t bytes) {
@@ -144,25 +144,23 @@ const char *FakeSink::get_name() const {
 }
 
 void FakeSink::Finish() {
-	gboolean connected = gst_object_has_ancestor(reinterpret_cast<GstObject *>(FAKE_SINK_DATA_CAST(data_->sink_data)->sink),
-			reinterpret_cast<GstObject *>(PLAYER_DATA_CAST(data_->other_data)->pipeline));
-
-	if(linked() && !connected) {
-		linked_ = false;
+	if(!linked()) {
 		return;
 	}
 
-	gst_pad_add_probe(FAKE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, &data_, NULL);
-
-	count_ --;
+	gst_pad_add_probe(FAKE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, data_, NULL);
 }
 
 bool FakeSink::linked() const {
-	return linked_;
+	return FAKE_SINK_DATA_CAST(data_->sink_data)->linked;
 }
 
 uint32_t FakeSink::num_src_pads() {
 	gint num;
 	g_object_get(G_OBJECT(PLAYER_DATA_CAST(data_->other_data)->tee), "num-src-pads", &num, NULL);
 	return num;
+}
+
+void FakeSink::DecrementCount() {
+	count_--;
 }

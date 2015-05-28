@@ -25,6 +25,7 @@ struct Data {
 	GstPad *teepad;
 
 	gboolean removing;
+	bool linked;
 };
 
 }
@@ -43,12 +44,12 @@ public:
 	bool linked() const;
 
 	uint32_t num_src_pads();
+	void DecrementCount();
 
 private:
 	AbstractSinkHelpers::Data *data_;
 
 	uint32_t bytes_returned_;
-	bool linked_;
 
 	static uint16_t count_;
 

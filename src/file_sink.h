@@ -24,6 +24,7 @@ struct Data {
 	GstPad *teepad;
 
 	gboolean removing;
+	bool linked;
 };
 
 }
@@ -40,7 +41,6 @@ public:
 
 protected:
 	const char *path_;
-	bool linked_;
 
 private:
 	AbstractSinkHelpers::Data *data_;

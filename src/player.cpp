@@ -124,7 +124,7 @@ void Player::Process() {
 	it = abstract_sinks_.begin();
 
 	while(it != abstract_sinks_.end()) {
-		(*it)->Finish();
+		//(*it)->Finish();
 		it = abstract_sinks_.erase(it);
 	}
 

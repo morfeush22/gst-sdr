@@ -24,6 +24,7 @@ struct Data {
 	GstPad *teepad;
 
 	gboolean removing;
+	bool linked;
 };
 
 }
@@ -40,8 +41,6 @@ public:
 
 private:
 	AbstractSinkHelpers::Data *data_;
-
-	bool linked_;
 
 };
 
