@@ -6,6 +6,7 @@
 #include "src/pulse_sink.h"
 #include "src/ring_src.h"
 #include "src/blocking_ring_buffer.h"
+#include "src/ogg_sink.h"
 #include "file_wrapper.h"
 #include <iostream>
 #include <unistd.h>
@@ -40,7 +41,7 @@ static gboolean RemCb(gpointer data) {
 	return FALSE;
 }
 
-#define BYTES 2000*10	//2.0kB
+#define BYTES 2000*10	//20kB
 
 static FileWrapper *file_wrapper = new FileWrapper("./player_unittest_file.aac", BYTES);
 static const char *const *start = file_wrapper->GetCurrentChunkPointer();
@@ -64,6 +65,19 @@ static void *ReadingThread(void *data) {
 uint16_t FakeSink::count_ = 0;
 
 int main() {
+	/*
+	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	OggSink *sink = new OggSink("./test.ogg");
+
+	Player player(src);
+	player.AddSink(sink);
+
+	player.Process();
+
+	delete sink;
+	delete src;
+	*/
+
 	pthread_t thread;
 	pthread_attr_t attr;
 
