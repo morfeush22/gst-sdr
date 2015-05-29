@@ -9,13 +9,13 @@
 #include "ring_src.h"
 #include <gst/app/app.h>
 
-#define RESOLUTION 0.0001	//resolution of pitch increments/decrements
-#define BOUND 0.01	//upper/lower bound of playback speed, relative to 1.0
+#define RESOLUTION 0.000001	//resolution of pitch increments/decrements
+#define BOUND 0.001	//upper/lower bound of playback speed, relative to 1.0
 
 #define BUFF_CHUNK 200	//0.2kB
 #define BUFF_SIZE (BUFF_CHUNK*10000)	//2MB, should be multiple of BUFF_CHUNK, size of ring buffer
 #define APP_SRC_BUFF_SIZE 2000	//2.0kB, size of internal appsrc buffer
-#define APP_SRC_BUFF_PERCENT 90	//percent of appsrc buffer fullness to emit need-data
+#define APP_SRC_BUFF_PERCENT 100	//percent of appsrc buffer fullness to emit need-data
 
 RingSrc::RingSrc(float threshold):
 threshold_(threshold),
