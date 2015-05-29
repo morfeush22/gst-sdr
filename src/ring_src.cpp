@@ -9,12 +9,13 @@
 #include "ring_src.h"
 #include <gst/app/app.h>
 
-#define RESOLUTION 0.01	//resolution of pitch increments/decrements
-#define BOUND 0.8	//upper/lower bound of playback speed, relative to 1.0
+#define RESOLUTION 0.0001	//resolution of pitch increments/decrements
+#define BOUND 0.01	//upper/lower bound of playback speed, relative to 1.0
 
-#define BUFF_CHUNK 900	//0.9kB
-#define BUFF_SIZE (BUFF_CHUNK*1000)	//900kB, should be multiple of BUFF_CHUNK
-#define APP_SRC_BUFF_SIZE 1800	//1.8kB, size of internal appsrc buffer
+#define BUFF_CHUNK 200	//0.2kB
+#define BUFF_SIZE (BUFF_CHUNK*10000)	//2MB, should be multiple of BUFF_CHUNK, size of ring buffer
+#define APP_SRC_BUFF_SIZE 2000	//2.0kB, size of internal appsrc buffer
+#define APP_SRC_BUFF_PERCENT 90	//percent of appsrc buffer fullness to emit need-data
 
 RingSrc::RingSrc(float threshold):
 threshold_(threshold),
@@ -106,7 +107,10 @@ void RingSrc::InitSrc(void *other_data) {
 	g_signal_connect(data->src, "need-data", G_CALLBACK(StartFeed), data_);
 	g_signal_connect(data->src, "enough-data", G_CALLBACK(StopFeed), data_);
 
-	gst_app_src_set_max_bytes(GST_APP_SRC(data->src), APP_SRC_BUFF_SIZE);
+	g_object_set(data->src,
+			"max-bytes", APP_SRC_BUFF_SIZE,
+			"min-percent", APP_SRC_BUFF_PERCENT,
+			NULL);
 }
 
 float RingSrc::DecrementRatio(void *player_ptr) {

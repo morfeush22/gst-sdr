@@ -40,7 +40,7 @@ static gboolean RemCb(gpointer data) {
 	return FALSE;
 }
 
-#define BYTES 1800*10	//1.8kB
+#define BYTES 2000*10	//2.0kB
 
 static FileWrapper *file_wrapper = new FileWrapper("./player_unittest_file.aac", BYTES);
 static const char *const *start = file_wrapper->GetCurrentChunkPointer();
