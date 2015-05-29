@@ -21,7 +21,7 @@ public:
 	void RemoveSink(AbstractSink *);
 	AbstractSink *AddSink(AbstractSink *);
 
-	void Write(char *, size_t);
+	void Write(float *, size_t);
 	void LastFrame();
 
 	void Process();

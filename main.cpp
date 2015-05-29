@@ -51,9 +51,9 @@ static void *ReadingThread(void *data) {
 		RingSrc *src = (RingSrc *)data;
 
 		int size = file_wrapper->GetNextChunk();
-		char *curr_ptr = const_cast<char *>(*start);
+		float *curr_ptr = reinterpret_cast<float *>(const_cast<char *>(*start));
 
-		src->Write(curr_ptr, size);
+		src->Write(curr_ptr, size/sizeof(float));
 
 		printf("##### WRITE #####\n");
 

@@ -12,7 +12,7 @@
 #define RESOLUTION 0.000001	//resolution of pitch increments/decrements
 #define BOUND 0.001	//upper/lower bound of playback speed, relative to 1.0
 
-#define BUFF_CHUNK 200	//0.2kB
+#define BUFF_CHUNK 50	//0.2kB
 #define BUFF_SIZE (BUFF_CHUNK*10000)	//2MB, should be multiple of BUFF_CHUNK, size of ring buffer
 #define APP_SRC_BUFF_SIZE 2000	//2.0kB, size of internal appsrc buffer
 #define APP_SRC_BUFF_PERCENT 100	//percent of appsrc buffer fullness to emit need-data
@@ -47,13 +47,13 @@ static gboolean ReadData(gpointer container_ptr) {
 
 	GstBuffer *buffer;
 	GstMapInfo map;
-	char *it;
+	float *it;
 	gint size;
 	GstFlowReturn ret;
 
-	buffer = gst_buffer_new_and_alloc(BUFF_CHUNK);
+	buffer = gst_buffer_new_and_alloc(BUFF_CHUNK*sizeof(float));
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
-	it = reinterpret_cast<char *>(map.data);
+	it = reinterpret_cast<float *>(map.data);
 
 	size = src_data->ring_buffer->ReadFrom(it, BUFF_CHUNK);
 
@@ -143,7 +143,7 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(ptr->other_data);
 	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(ptr->src_data);
 
-	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu\n", src_data->ring_buffer->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_));
+	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu\n", src_data->ring_buffer->DataStored()*sizeof(float), BUFF_SIZE*sizeof(float), ParseThreshold(0.5-threshold_)*sizeof(float), ParseThreshold(0.5+threshold_)*sizeof(float));
 
 	if(data->ready) {
 		float ratio;
@@ -162,7 +162,7 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 	}
 }
 
-void RingSrc::Write(char *buffer, size_t length) {
+void RingSrc::Write(float *buffer, size_t length) {
 	RING_SRC_DATA_CAST(data_->src_data)->ring_buffer->WriteInto(buffer, length);
 }
 

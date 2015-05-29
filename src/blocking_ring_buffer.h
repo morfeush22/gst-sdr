@@ -16,8 +16,8 @@ public:
 	BlockingRingBuffer(size_t);
 	virtual ~BlockingRingBuffer();
 
-	size_t ReadFrom(char *, size_t);
-	size_t WriteInto(char *, size_t);
+	size_t ReadFrom(float *, size_t);
+	size_t WriteInto(float *, size_t);
 
 	size_t FreeSpace();
 	size_t DataStored();
@@ -25,7 +25,7 @@ public:
 	void set_last_frame(bool);
 
 private:
-	RingBuffer<char> buffer_;
+	RingBuffer<float> buffer_;
 
 	pthread_mutex_t count_mutex_;
 	pthread_cond_t count_condition_not_empty_;
