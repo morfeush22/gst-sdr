@@ -24,7 +24,7 @@ public:
 	void Write(float *, size_t);
 	void LastFrame();
 
-	const std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map() const;
+	const std::map<const std::string, std::string> *tags_map() const;
 
 	void Process();
 

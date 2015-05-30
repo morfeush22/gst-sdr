@@ -37,7 +37,7 @@ void AudioDecoder::LastFrame() {
 	src_->set_last_frame(true);
 }
 
-const std::map<const char*, char*, PlayerHelpers::CmpStr> *AudioDecoder::tags_map() const {
+const std::map<const std::string, std::string> *AudioDecoder::tags_map() const {
 	return player_->tags_map();
 }
 

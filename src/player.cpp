@@ -6,27 +6,36 @@
  */
 
 #include "player.h"
-#include <stdio.h>
+#include <sstream>
 
 static void SaveTags(const GstTagList *list, const gchar *tag, gpointer data_ptr) {
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_ptr);
-	std::map<const char *, char *, PlayerHelpers::CmpStr>::iterator it;
+	std::map<const std::string, std::string>::iterator it;
 
 	gint count = gst_tag_list_get_tag_size(list, tag);
 
 	for(gint i = 0; i < count; i++) {
 		if((it = data->tags_map->find(gst_tag_get_nick(tag))) != data->tags_map->end()) {
-			if(gst_tag_get_type(tag) == G_TYPE_STRING)
-				gst_tag_list_get_string_index(list, tag, i, &it->second);
+			if(gst_tag_get_type(tag) == G_TYPE_STRING) {
+				gchar *string;
+
+				gst_tag_list_get_string_index(list, tag, i, &string);
+
+				std::string temp = std::string(string);
+				it->second = temp;
+
+				g_free(string);
+			}
 			else {
 				 GstDateTime *time;
 
 				 gst_tag_list_get_date_time_index(list, tag, i, &time);
 				 gint year = gst_date_time_get_year(time);
-				 char *char_year = new char[5];
-				 sprintf(char_year, "%d", year);
-				 char_year[4] = '\0';
-				 it->second = char_year;
+
+				 std::ostringstream t;
+				 t << year;
+				 std::string temp = t.str();
+				 it->second = temp;
 
 				 gst_date_time_unref(time);
 			}
@@ -96,7 +105,7 @@ Player::Player(AbstractSrc *src):
 abstract_src_(src) {
 	gst_init (NULL, NULL);
 
-	data_.tags_map = new std::map<const char *, char *, PlayerHelpers::CmpStr>;
+	data_.tags_map = new std::map<const std::string, std::string>;
 	data_.player = this;
 	data_.ready = FALSE;
 
@@ -116,16 +125,18 @@ void Player::Process() {
 	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline), GST_STATE_PLAYING);
 	data_.loop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(data_.loop);
-
-	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline), GST_STATE_NULL);
-	gst_object_unref(data_.pipeline);
+	g_main_loop_unref(data_.loop);
 
 	std::list<AbstractSink *>::iterator it;
 	it = abstract_sinks_.begin();
 
 	while(it != abstract_sinks_.end()) {
+		(*it)->Finish();
 		it = abstract_sinks_.erase(it);
 	}
+
+	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline), GST_STATE_NULL);
+	gst_object_unref(data_.pipeline);
 
 	data_.ready = FALSE;
 }
@@ -175,11 +186,11 @@ void Player::SetPropeties() {
 }
 
 void Player::SetTagsFilters() {
-	(*data_.tags_map)[GST_TAG_TITLE] = NULL;
-	(*data_.tags_map)[GST_TAG_ARTIST] = NULL;
-	(*data_.tags_map)[GST_TAG_ALBUM] = NULL;
-	(*data_.tags_map)[GST_TAG_GENRE] = NULL;
-	(*data_.tags_map)[GST_TAG_DATE_TIME] = NULL;
+	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_TITLE, ""));
+	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_ARTIST, ""));
+	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_ALBUM, ""));
+	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_GENRE, ""));
+	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_DATE_TIME, ""));
 }
 
 AbstractSink *Player::AddSink(AbstractSink *sink) {
@@ -205,7 +216,7 @@ void Player::RemoveSink(AbstractSink *sink) {
 	}
 }
 
-const std::map<const char*, char*, PlayerHelpers::CmpStr> *Player::tags_map() const {
+const std::map<const std::string, std::string> *Player::tags_map() const {
 	return data_.tags_map;
 }
 

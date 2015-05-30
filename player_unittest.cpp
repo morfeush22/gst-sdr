@@ -44,14 +44,14 @@ TEST(PlayerTestTagsTest, tags_returned) {
 	player.AddSink(sink);
 	player.Process();
 
-	std::map<const char *, char *, PlayerHelpers::CmpStr>::const_iterator it;
+	map<const string, string>::const_iterator it;
 	string line;
 
 	while(getline(in_file, line)) {
-		it = player.tags_map()->find(line.c_str());
+		it = player.tags_map()->find(line);
 		ASSERT_TRUE(it != player.tags_map()->end());
 		getline(in_file, line);
-		EXPECT_FALSE(strcmp(it->second, line.c_str()));
+		EXPECT_FALSE(line.compare(it->second));
 	}
 
 	delete sink;

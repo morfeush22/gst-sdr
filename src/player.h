@@ -16,16 +16,11 @@
 #include <gst/gst.h>
 #include <list>
 #include <map>
+#include <string>
 #include <stdint.h>
 #include <string.h>
 
 namespace PlayerHelpers {
-
-struct CmpStr {
-	bool operator()(char const *a, char const *b) const {
-		return strcmp(a, b) < 0;
-	}
-};
 
 struct Data {
 	void *player;
@@ -42,7 +37,7 @@ struct Data {
 
 	GMainLoop *loop;
 
-	std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map;
+	std::map<const std::string, std::string> *tags_map;
 	gboolean ready;
 };
 
@@ -84,7 +79,7 @@ public:
 	 */
 	AbstractSink *AddSink(AbstractSink *);
 
-	const std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map() const;
+	const std::map<const std::string, std::string> *tags_map() const;
 
 private:
 	PlayerHelpers::Data data_;
