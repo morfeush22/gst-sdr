@@ -22,6 +22,7 @@ public:
 	size_t FreeSpace();
 	size_t DataStored();
 
+	const bool last_frame() const;
 	void set_last_frame(bool);
 
 private:

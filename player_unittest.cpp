@@ -8,7 +8,7 @@
 
 using namespace std;
 
-uint16_t FakeSink::count_ = 0;
+//uint16_t FakeSink::count_ = 0;
 
 TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 	uint32_t size;
@@ -158,7 +158,7 @@ TEST(PulseSinkTestLinkage, test_of_linkage) {
 }
 
 TEST(RingSrcTestDecrementRatio, decrementation_of_ratio) {
-	RingSrc *src = new RingSrc(0.2);
+	RingSrc *src = new RingSrc(0.2, 100);
 	FakeSink *sink = new FakeSink();
 
 	Player player(src);
@@ -173,7 +173,7 @@ TEST(RingSrcTestDecrementRatio, decrementation_of_ratio) {
 
 
 TEST(RingSrcTestIncrementRatio, incrementation_of_ratio) {
-	RingSrc *src = new RingSrc(0.2);
+	RingSrc *src = new RingSrc(0.2, 100);
 	FakeSink *sink = new FakeSink();
 
 	Player player(src);

@@ -7,8 +7,8 @@
 
 #include "audio_decoder.h"
 
-AudioDecoder::AudioDecoder(float threshold) {
-	src_ = new RingSrc(threshold);
+AudioDecoder::AudioDecoder(float threshold, size_t length) {
+	src_ = new RingSrc(threshold, length);
 	sink_ = new PulseSink();
 
 	player_ = new Player(src_);
@@ -35,6 +35,10 @@ void AudioDecoder::Write(float *buffer, size_t length) {
 
 void AudioDecoder::LastFrame() {
 	src_->set_last_frame(true);
+}
+
+const std::map<const char*, char*, PlayerHelpers::CmpStr> *AudioDecoder::tags_map() const {
+	return player_->tags_map();
 }
 
 void AudioDecoder::Process() {

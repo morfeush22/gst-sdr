@@ -15,7 +15,7 @@
 
 class AudioDecoder {
 public:
-	AudioDecoder(float);
+	AudioDecoder(float, size_t);
 	virtual ~AudioDecoder();
 
 	void RemoveSink(AbstractSink *);
@@ -23,6 +23,8 @@ public:
 
 	void Write(float *, size_t);
 	void LastFrame();
+
+	const std::map<const char *, char *, PlayerHelpers::CmpStr> *tags_map() const;
 
 	void Process();
 

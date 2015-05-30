@@ -9,6 +9,8 @@
 #include "player.h"
 #include <stdio.h>
 
+uint16_t FakeSink::count_ = 0;
+
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data);

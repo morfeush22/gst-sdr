@@ -22,6 +22,8 @@ struct Data {
 	void *abstract_src;
 
 	BlockingRingBuffer *ring_buffer;
+	const size_t buff_size;
+	const size_t buff_chunk_size;
 
 	guint source_id;
 };
@@ -30,7 +32,7 @@ struct Data {
 
 class RingSrc: public AbstractSrc {
 public:
-	RingSrc(float threshold);
+	RingSrc(float, size_t);
 	virtual ~RingSrc();
 
 	void InitSrc(void *);

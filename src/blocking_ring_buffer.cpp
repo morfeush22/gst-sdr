@@ -54,3 +54,7 @@ size_t BlockingRingBuffer::DataStored() {
 void BlockingRingBuffer::set_last_frame(bool to) {
 	last_frame_ = to;
 }
+
+const bool BlockingRingBuffer::last_frame() const {
+	return last_frame_;
+}
