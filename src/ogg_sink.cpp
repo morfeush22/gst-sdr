@@ -1,17 +1,17 @@
 /*
- * pulse_sink.cpp
+ * ogg_sink.cpp
  *
- *  Created on: May 13, 2015
+ *  Created on: May 29, 2015
  *      Author: morfeush22
  */
 
-#include "pulse_sink.h"
+#include "ogg_sink.h"
 #include "player.h"
 
 static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data);
-	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(container->sink_data);
+	OggSinkHelpers::Data *sink_data = OGG_SINK_DATA_CAST(container->sink_data);
 
 	GstPad *sinkpad;
 
@@ -23,12 +23,18 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_object_unref(sinkpad);
 
 	gst_bin_remove(GST_BIN(data->pipeline), sink_data->queue);
+	gst_bin_remove(GST_BIN(data->pipeline), sink_data->encoder);
+	gst_bin_remove(GST_BIN(data->pipeline), sink_data->muxer);
 	gst_bin_remove(GST_BIN(data->pipeline), sink_data->sink);
 
 	gst_element_set_state(sink_data->sink, GST_STATE_NULL);
+	gst_element_set_state(sink_data->muxer, GST_STATE_NULL);
+	gst_element_set_state(sink_data->encoder, GST_STATE_NULL);
 	gst_element_set_state(sink_data->queue, GST_STATE_NULL);
 
 	gst_object_unref(sink_data->sink);
+	gst_object_unref(sink_data->muxer);
+	gst_object_unref(sink_data->encoder);
 	gst_object_unref(sink_data->queue);
 
 	gst_element_release_request_pad(data->tee, sink_data->teepad);
@@ -39,10 +45,11 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	return GST_PAD_PROBE_REMOVE;
 }
 
-PulseSink::PulseSink() {
+OggSink::OggSink(const char *path):
+path_(path) {
 	data_ = new AbstractSinkHelpers::Data;
 
-	PulseSinkHelpers::Data *temp = new PulseSinkHelpers::Data;
+	OggSinkHelpers::Data *temp = new OggSinkHelpers::Data;
 	temp->abstract_sink = this;
 	temp->linked = false;
 
@@ -50,19 +57,19 @@ PulseSink::PulseSink() {
 	data_->other_data = NULL;
 }
 
-PulseSink::~PulseSink() {
-	delete PULSE_SINK_DATA_CAST(data_->sink_data);
+OggSink::~OggSink() {
+	delete OGG_SINK_DATA_CAST(data_->sink_data);
 	delete data_;
 }
 
-void PulseSink::InitSink(void *other_data) {
+void OggSink::InitSink(void *other_data) {
 	if(linked())
 		return;
 
 	data_->other_data = other_data;
 
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_->other_data);
-	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(data_->sink_data);
+	OggSinkHelpers::Data *sink_data = OGG_SINK_DATA_CAST(data_->sink_data);
 
 	GstPad *sinkpad;
 	GstPadTemplate *templ;
@@ -79,28 +86,50 @@ void PulseSink::InitSink(void *other_data) {
 	g_assert(sink_data->queue);
 
 	strcpy(buff, name());
+	strcat(buff, "_encoder");
+
+	sink_data->encoder = gst_element_factory_make("vorbisenc", buff);
+	g_assert(sink_data->encoder);
+
+	strcpy(buff, name());
+	strcat(buff, "_muxer");
+
+	sink_data->muxer = gst_element_factory_make("oggmux", buff);
+	g_assert(sink_data->muxer);
+
+	strcpy(buff, name());
 	strcat(buff, "_sink");
 
-	sink_data->sink = gst_element_factory_make(name(), buff);
+	sink_data->sink = gst_element_factory_make("filesink", buff);
 	g_assert(sink_data->sink);
 
-	sink_data->removing = false;
+	g_object_set(sink_data->sink, "location", path_, NULL);
+
+	sink_data->removing = FALSE;
 
 	gst_object_ref(sink_data->queue);
+	gst_object_ref(sink_data->encoder);
+	gst_object_ref(sink_data->muxer);
 	gst_object_ref(sink_data->sink);
 
 	gst_bin_add_many(GST_BIN(data->pipeline),
 			sink_data->queue,
+			sink_data->encoder,
+			sink_data->muxer,
 			sink_data->sink,
 			NULL);
 
 	g_assert(gst_element_link_many(
 			sink_data->queue,
+			sink_data->encoder,
+			sink_data->muxer,
 			sink_data->sink,
 			NULL)
 	);
 
 	gst_element_sync_state_with_parent(sink_data->queue);
+	gst_element_sync_state_with_parent(sink_data->encoder);
+	gst_element_sync_state_with_parent(sink_data->muxer);
 	gst_element_sync_state_with_parent(sink_data->sink);
 
 	sinkpad = gst_element_get_static_pad(sink_data->queue, "sink");
@@ -110,18 +139,18 @@ void PulseSink::InitSink(void *other_data) {
 	sink_data->linked = true;
 }
 
-const char *PulseSink::name() const {
-	return "pulsesink";
+const char *OggSink::name() const {
+	return "oggsink";
 }
 
-void PulseSink::Finish() {
+void OggSink::Finish() {
 	if(!linked()) {
 		return;
 	}
 
-	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, data_, NULL);
+	gst_pad_add_probe(OGG_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, data_, NULL);
 }
 
-bool PulseSink::linked() const {
-	return PULSE_SINK_DATA_CAST(data_->sink_data)->linked;
+bool OggSink::linked() const {
+	return OGG_SINK_DATA_CAST(data_->sink_data)->linked;
 }

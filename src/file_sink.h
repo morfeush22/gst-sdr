@@ -34,15 +34,13 @@ public:
 	FileSink(const char *);
 	virtual ~FileSink();
 
-	virtual void InitSink(void *);
+	void InitSink(void *);
 	const char *name() const;
 	void Finish();
 	bool linked() const;
 
-protected:
-	const char *path_;
-
 private:
+	const char *path_;
 	AbstractSinkHelpers::Data *data_;
 
 };

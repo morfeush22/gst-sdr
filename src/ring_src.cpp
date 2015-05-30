@@ -9,12 +9,13 @@
 #include "ring_src.h"
 #include <gst/app/app.h>
 
-#define RESOLUTION 0.01	//resolution of pitch increments/decrements
-#define BOUND 0.8	//upper/lower bound of playback speed, relative to 1.0
+#define RESOLUTION 0.000001	//resolution of pitch increments/decrements
+#define BOUND 0.001	//upper/lower bound of playback speed, relative to 1.0
 
-#define BUFF_CHUNK 900	//0.9kB
-#define BUFF_SIZE (BUFF_CHUNK*1000)	//900kB, should be multiple of BUFF_CHUNK
-#define APP_SRC_BUFF_SIZE 1800	//1.8kB, size of internal appsrc buffer
+#define BUFF_CHUNK 50	//0.2kB
+#define BUFF_SIZE (BUFF_CHUNK*10000)	//2MB, should be multiple of BUFF_CHUNK, size of ring buffer
+#define APP_SRC_BUFF_SIZE 2000	//2.0kB, size of internal appsrc buffer
+#define APP_SRC_BUFF_PERCENT 100	//percent of appsrc buffer fullness to emit need-data
 
 RingSrc::RingSrc(float threshold):
 threshold_(threshold),
@@ -46,13 +47,13 @@ static gboolean ReadData(gpointer container_ptr) {
 
 	GstBuffer *buffer;
 	GstMapInfo map;
-	char *it;
+	float *it;
 	gint size;
 	GstFlowReturn ret;
 
-	buffer = gst_buffer_new_and_alloc(BUFF_CHUNK);
+	buffer = gst_buffer_new_and_alloc(BUFF_CHUNK*sizeof(float));
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
-	it = reinterpret_cast<char *>(map.data);
+	it = reinterpret_cast<float *>(map.data);
 
 	size = src_data->ring_buffer->ReadFrom(it, BUFF_CHUNK);
 
@@ -106,7 +107,10 @@ void RingSrc::InitSrc(void *other_data) {
 	g_signal_connect(data->src, "need-data", G_CALLBACK(StartFeed), data_);
 	g_signal_connect(data->src, "enough-data", G_CALLBACK(StopFeed), data_);
 
-	gst_app_src_set_max_bytes(GST_APP_SRC(data->src), APP_SRC_BUFF_SIZE);
+	g_object_set(data->src,
+			"max-bytes", APP_SRC_BUFF_SIZE,
+			"min-percent", APP_SRC_BUFF_PERCENT,
+			NULL);
 }
 
 float RingSrc::DecrementRatio(void *player_ptr) {
@@ -139,7 +143,7 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(ptr->other_data);
 	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(ptr->src_data);
 
-	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu\n", src_data->ring_buffer->DataStored(), BUFF_SIZE, ParseThreshold(0.5-threshold_), ParseThreshold(0.5+threshold_));
+	g_print("current: %lu - size: %d - lesser: %lu - upper: %lu\n", src_data->ring_buffer->DataStored()*sizeof(float), BUFF_SIZE*sizeof(float), ParseThreshold(0.5-threshold_)*sizeof(float), ParseThreshold(0.5+threshold_)*sizeof(float));
 
 	if(data->ready) {
 		float ratio;
@@ -158,7 +162,7 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 	}
 }
 
-void RingSrc::Write(char *buffer, size_t length) {
+void RingSrc::Write(float *buffer, size_t length) {
 	RING_SRC_DATA_CAST(data_->src_data)->ring_buffer->WriteInto(buffer, length);
 }
 
