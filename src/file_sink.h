@@ -27,6 +27,8 @@ struct Data {
 	bool linked;
 };
 
+GstPadProbeReturn UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
+
 }
 
 class FileSink: public AbstractSink {

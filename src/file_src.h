@@ -19,9 +19,8 @@ public:
 	const char *name() const;
 
 private:
-	AbstractSrcHelpers::Data *data_;
-
 	const char *path_;
+	AbstractSrcHelpers::Data *data_;
 
 };
 

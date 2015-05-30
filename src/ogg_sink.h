@@ -29,6 +29,8 @@ struct Data {
 	bool linked;
 };
 
+GstPadProbeReturn UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
+
 }
 
 class OggSink: public AbstractSink {

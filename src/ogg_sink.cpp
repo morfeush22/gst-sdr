@@ -8,7 +8,7 @@
 #include "ogg_sink.h"
 #include "player.h"
 
-static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+GstPadProbeReturn OggSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data);
 	OggSinkHelpers::Data *sink_data = OGG_SINK_DATA_CAST(container->sink_data);
@@ -46,9 +46,8 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 }
 
 OggSink::OggSink(const char *path):
-path_(path) {
-	data_ = new AbstractSinkHelpers::Data;
-
+path_(path),
+data_(new AbstractSinkHelpers::Data) {
 	OggSinkHelpers::Data *temp = new OggSinkHelpers::Data;
 	temp->abstract_sink = this;
 	temp->linked = false;
@@ -148,7 +147,7 @@ void OggSink::Finish() {
 		return;
 	}
 
-	gst_pad_add_probe(OGG_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, data_, NULL);
+	gst_pad_add_probe(OGG_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, OggSinkHelpers::UnlinkCall, data_, NULL);
 }
 
 bool OggSink::linked() const {

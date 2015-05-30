@@ -5,7 +5,6 @@
  *      Author: morfeush22
  */
 
-#include "player.h"
 #include "ring_src.h"
 #include <gst/app/app.h>
 
@@ -17,11 +16,11 @@
 #define BUFF_CHUNK_DIVIDER 10000	//divider of ring buffer length to obrain single chunk length
 
 RingSrc::RingSrc(float threshold, size_t buffer_length):
+ring_buffer_(new BlockingRingBuffer(buffer_length)),
 threshold_(threshold),
-current_ratio_(1.0) {
-	data_ = new AbstractSrcHelpers::Data;
-
-	RingSrcHelpers::Data temp = {this, new BlockingRingBuffer(buffer_length), buffer_length, buffer_length/BUFF_CHUNK_DIVIDER};
+current_ratio_(1.0),
+data_(new AbstractSrcHelpers::Data) {
+	RingSrcHelpers::Data temp = {this, buffer_length, buffer_length/BUFF_CHUNK_DIVIDER};
 	RingSrcHelpers::Data *data_ptr = new RingSrcHelpers::Data(temp);
 
 	data_->src_data = data_ptr;
@@ -29,19 +28,21 @@ current_ratio_(1.0) {
 }
 
 RingSrc::~RingSrc() {
-	delete RING_SRC_DATA_CAST(data_->src_data)->ring_buffer;
 	delete RING_SRC_DATA_CAST(data_->src_data);
 	delete data_;
+	delete ring_buffer_;
 }
 
 const char *RingSrc::name() const {
 	return "appsrc";
 }
 
-static gboolean ReadData(gpointer container_ptr) {
+gboolean RingSrcHelpers::ReadData(gpointer container_ptr) {
 	AbstractSrcHelpers::Data *container = ABSTRACT_SRC_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data);
 	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(container->src_data);
+
+	RingSrc *src = RING_SRC_CAST(src_data->abstract_src);
 
 	GstBuffer *buffer;
 	GstMapInfo map;
@@ -53,7 +54,7 @@ static gboolean ReadData(gpointer container_ptr) {
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
 	it = reinterpret_cast<float *>(map.data);
 
-	size = src_data->ring_buffer->ReadFrom(it, src_data->buff_chunk_size);
+	size = src->ring_buffer_->ReadFrom(it, src_data->buff_chunk_size);
 
 	gst_buffer_unmap(buffer, &map);
 
@@ -63,19 +64,19 @@ static gboolean ReadData(gpointer container_ptr) {
 		return FALSE;
 	}
 
-	//if(size != src_data->buff_chunk_size) {
-	if(src_data->ring_buffer->last_frame()) {
+	if(size != src_data->buff_chunk_size) {
+	//if(src->ring_buffer_->last_frame()) {
 		gst_app_src_end_of_stream(reinterpret_cast<GstAppSrc *>(data->src));
 		return FALSE;
 	}
 
-	RING_SRC_CAST(src_data->abstract_src)->ProcessThreshold(container);
+	src->ProcessThreshold(PLAYER_CAST(data->player));
 
 	return TRUE;
 }
 
 
-static void StartFeed(GstElement *pipeline, guint size, gpointer container_ptr) {
+void RingSrcHelpers::StartFeed(GstElement *pipeline, guint size, gpointer container_ptr) {
 	RingSrcHelpers::Data *data = RING_SRC_DATA_CAST(ABSTRACT_SRC_DATA_CAST(container_ptr)->src_data);
 
 	if(data->source_id == 0) {
@@ -83,7 +84,7 @@ static void StartFeed(GstElement *pipeline, guint size, gpointer container_ptr) 
 	}
 }
 
-static void StopFeed(GstElement *pipeline, gpointer container_ptr) {
+void RingSrcHelpers::StopFeed(GstElement *pipeline, gpointer container_ptr) {
 	RingSrcHelpers::Data *data = RING_SRC_DATA_CAST(ABSTRACT_SRC_DATA_CAST(container_ptr)->src_data);
 
 	if (data->source_id != 0) {
@@ -103,8 +104,8 @@ void RingSrc::InitSrc(void *other_data) {
 	data->src = gst_element_factory_make(name(), "src");
 	g_assert(data->src);
 
-	g_signal_connect(data->src, "need-data", G_CALLBACK(StartFeed), data_);
-	g_signal_connect(data->src, "enough-data", G_CALLBACK(StopFeed), data_);
+	g_signal_connect(data->src, "need-data", G_CALLBACK(RingSrcHelpers::StartFeed), data_);
+	g_signal_connect(data->src, "enough-data", G_CALLBACK(RingSrcHelpers::StopFeed), data_);
 
 	g_object_set(data->src,
 			"max-bytes", src_data->buff_size/APP_SRC_BUFF_DIVIDER,
@@ -112,23 +113,21 @@ void RingSrc::InitSrc(void *other_data) {
 			NULL);
 }
 
-float RingSrc::DecrementRatio(void *player_ptr) {
+float RingSrc::DecrementRatio(Player *player) {
 	current_ratio_ -= RESOLUTION;
 	if(current_ratio_<(1-BOUND))
 		current_ratio_ = 1-BOUND;
 
-	Player *player = static_cast<Player *>(player_ptr);
 	player->set_playback_speed(current_ratio_);
 
 	return current_ratio_;
 }
 
-float RingSrc::IncrementRatio(void *player_ptr) {
+float RingSrc::IncrementRatio(Player *player) {
 	current_ratio_ += RESOLUTION;
 	if(current_ratio_>(1+BOUND))
 		current_ratio_ = 1+BOUND;
 
-	Player *player = static_cast<Player *>(player_ptr);
 	player->set_playback_speed(current_ratio_);
 
 	return current_ratio_;
@@ -138,23 +137,18 @@ size_t RingSrc::ParseThreshold(float fraction) {
 	return static_cast<size_t>(RING_SRC_DATA_CAST(data_->src_data)->buff_size)*fraction;
 }
 
-void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
-	PlayerHelpers::Data *data = PLAYER_DATA_CAST(ptr->other_data);
-	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(ptr->src_data);
-
-	g_print("current: %lu - size: %lu - lesser: %lu - upper: %lu\n", src_data->ring_buffer->DataStored()*sizeof(float), src_data->buff_size*sizeof(float), ParseThreshold(0.5-threshold_)*sizeof(float), ParseThreshold(0.5+threshold_)*sizeof(float));
-
-	if(data->ready) {
+void RingSrc::ProcessThreshold(Player *player) {
+	if(player->ready()) {
 		float ratio;
 
-		if(src_data->ring_buffer->DataStored()<ParseThreshold(0.5-threshold_)) {
-			ratio = DecrementRatio(data->player);
+		if(ring_buffer_->DataStored()<ParseThreshold(0.5-threshold_)) {
+			ratio = DecrementRatio(player);
 			g_warning("current ratio: %f\n", ratio);
 			return;
 		}
 
-		if(src_data->ring_buffer->DataStored()>ParseThreshold(0.5+threshold_)) {
-			ratio = IncrementRatio(data->player);
+		if(ring_buffer_->DataStored()>ParseThreshold(0.5+threshold_)) {
+			ratio = IncrementRatio(player);
 			g_warning("current ratio: %f\n", ratio);
 			return;
 		}
@@ -162,9 +156,9 @@ void RingSrc::ProcessThreshold(AbstractSrcHelpers::Data *ptr) {
 }
 
 void RingSrc::Write(float *buffer, size_t length) {
-	RING_SRC_DATA_CAST(data_->src_data)->ring_buffer->WriteInto(buffer, length);
+	ring_buffer_->WriteInto(buffer, length);
 }
 
 void RingSrc::set_last_frame(bool to) {
-	RING_SRC_DATA_CAST(data_->src_data)->ring_buffer->set_last_frame(to);
+	ring_buffer_->set_last_frame(to);
 }

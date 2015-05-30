@@ -37,9 +37,11 @@ struct Data {
 
 	GMainLoop *loop;
 
-	std::map<const std::string, std::string> *tags_map;
-	gboolean ready;
+	bool ready;
 };
+
+void SaveTags(const GstTagList *, const gchar *, gpointer);
+gboolean BusCall(GstBus *, GstMessage *, gpointer);
 
 }
 
@@ -79,10 +81,25 @@ public:
 	 */
 	AbstractSink *AddSink(AbstractSink *);
 
+	/**
+	 * Get tags map
+	 * @return constant pointer to tags map
+	 */
 	const std::map<const std::string, std::string> *tags_map() const;
+
+	/**
+	 * Internal ready state
+	 * @return true if player ready to change playback speed
+	 */
+	const bool ready() const;
+
+	friend void PlayerHelpers::SaveTags(const GstTagList *, const gchar *, gpointer);
+	friend gboolean PlayerHelpers::BusCall(GstBus *, GstMessage *, gpointer);
 
 private:
 	PlayerHelpers::Data data_;
+
+	std::map<const std::string, std::string> *tags_map_;
 
 	AbstractSrc *abstract_src_;
 	std::list<AbstractSink *> abstract_sinks_;

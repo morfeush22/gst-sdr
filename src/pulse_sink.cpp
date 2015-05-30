@@ -8,7 +8,7 @@
 #include "pulse_sink.h"
 #include "player.h"
 
-static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+GstPadProbeReturn PulseSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data);
 	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(container->sink_data);
@@ -119,7 +119,7 @@ void PulseSink::Finish() {
 		return;
 	}
 
-	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, data_, NULL);
+	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, PulseSinkHelpers::UnlinkCall, data_, NULL);
 }
 
 bool PulseSink::linked() const {

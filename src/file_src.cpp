@@ -8,9 +8,9 @@
 #include "file_src.h"
 #include "player.h"
 
-FileSrc::FileSrc(const char *path): path_(path) {
-	data_ = new AbstractSrcHelpers::Data;
-
+FileSrc::FileSrc(const char *path):
+path_(path),
+data_(new AbstractSrcHelpers::Data) {
 	data_->src_data = this;
 	data_->other_data = NULL;
 }

@@ -11,7 +11,7 @@
 
 uint16_t FakeSink::count_ = 0;
 
-static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+GstPadProbeReturn FakeSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data);
 	FakeSinkHelpers::Data *sink_data = FAKE_SINK_DATA_CAST(container->sink_data);
@@ -38,7 +38,7 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_object_unref(sink_data->teepad);
 
 	sink_data->linked = false;
-	FAKE_SINK_CAST(sink_data->abstract_sink)->DecrementCount();
+	FAKE_SINK_CAST(sink_data->abstract_sink)->count_--;
 
 	return GST_PAD_PROBE_REMOVE;
 }
@@ -52,9 +52,8 @@ static void SinkHandoffCall(GstElement *fakesink, GstBuffer *buffer, GstPad *pad
 }
 
 FakeSink::FakeSink():
+data_(new AbstractSinkHelpers::Data),
 bytes_returned_(0) {
-	data_ = new AbstractSinkHelpers::Data;
-
 	FakeSinkHelpers::Data *temp = new FakeSinkHelpers::Data;
 	temp->abstract_sink = this;
 	temp->linked = false;
@@ -151,7 +150,7 @@ void FakeSink::Finish() {
 		return;
 	}
 
-	gst_pad_add_probe(FAKE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, data_, NULL);
+	gst_pad_add_probe(FAKE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, FakeSinkHelpers::UnlinkCall, data_, NULL);
 }
 
 bool FakeSink::linked() const {
@@ -162,10 +161,6 @@ const uint32_t FakeSink::num_src_pads() const {
 	gint num;
 	g_object_get(G_OBJECT(PLAYER_DATA_CAST(data_->other_data)->tee), "num-src-pads", &num, NULL);
 	return num;
-}
-
-void FakeSink::DecrementCount() {
-	count_--;
 }
 
 const float FakeSink::playback_speed() const {

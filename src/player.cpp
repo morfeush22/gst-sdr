@@ -8,14 +8,14 @@
 #include "player.h"
 #include <sstream>
 
-static void SaveTags(const GstTagList *list, const gchar *tag, gpointer data_ptr) {
-	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_ptr);
+void PlayerHelpers::SaveTags(const GstTagList *list, const gchar *tag, gpointer data_ptr) {
+	Player *player = PLAYER_CAST(data_ptr);
 	std::map<const std::string, std::string>::iterator it;
 
 	gint count = gst_tag_list_get_tag_size(list, tag);
 
 	for(gint i = 0; i < count; i++) {
-		if((it = data->tags_map->find(gst_tag_get_nick(tag))) != data->tags_map->end()) {
+		if((it = player->tags_map_->find(gst_tag_get_nick(tag))) != player->tags_map_->end()) {
 			if(gst_tag_get_type(tag) == G_TYPE_STRING) {
 				gchar *string;
 
@@ -43,7 +43,7 @@ static void SaveTags(const GstTagList *list, const gchar *tag, gpointer data_ptr
 	}
 }
 
-static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
+gboolean PlayerHelpers::BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_ptr);
 
 	switch(GST_MESSAGE_TYPE(message)) {
@@ -75,7 +75,7 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 
 	case GST_MESSAGE_ASYNC_DONE: {
 		g_print ("GStreamer: prerolled, lock'n'load\n");
-		data->ready = TRUE;
+		data->ready = true;
 		break;
 	}
 
@@ -84,7 +84,7 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 
 		gst_message_parse_tag(message, &tags);
 
-		gst_tag_list_foreach(tags, SaveTags, data);
+		gst_tag_list_foreach(tags, SaveTags, data->player);
 
 		gst_tag_list_free(tags);
 		break;
@@ -102,18 +102,17 @@ static gboolean BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
 }
 
 Player::Player(AbstractSrc *src):
+tags_map_(new std::map<const std::string, std::string>),
 abstract_src_(src) {
 	gst_init (NULL, NULL);
 
-	data_.tags_map = new std::map<const std::string, std::string>;
 	data_.player = this;
-	data_.ready = FALSE;
 
 	Init();
 }
 
 Player::~Player() {
-	delete data_.tags_map;
+	delete tags_map_;
 }
 
 void Player::Process() {
@@ -138,7 +137,7 @@ void Player::Process() {
 	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline), GST_STATE_NULL);
 	gst_object_unref(data_.pipeline);
 
-	data_.ready = FALSE;
+	data_.ready = false;
 }
 
 void Player::ConstructObjects() {
@@ -178,7 +177,7 @@ void Player::SetPropeties() {
 			NULL);	//add elements to bin
 
 	bus = gst_element_get_bus(data_.pipeline);
-	gst_bus_add_watch(bus, BusCall, &data_);
+	gst_bus_add_watch(bus, PlayerHelpers::BusCall, &data_);
 
 	SetTagsFilters();
 
@@ -186,11 +185,11 @@ void Player::SetPropeties() {
 }
 
 void Player::SetTagsFilters() {
-	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_TITLE, ""));
-	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_ARTIST, ""));
-	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_ALBUM, ""));
-	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_GENRE, ""));
-	data_.tags_map->insert(std::pair<const std::string, std::string>(GST_TAG_DATE_TIME, ""));
+	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_TITLE, ""));
+	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_ARTIST, ""));
+	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_ALBUM, ""));
+	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_GENRE, ""));
+	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_DATE_TIME, ""));
 }
 
 AbstractSink *Player::AddSink(AbstractSink *sink) {
@@ -217,7 +216,11 @@ void Player::RemoveSink(AbstractSink *sink) {
 }
 
 const std::map<const std::string, std::string> *Player::tags_map() const {
-	return data_.tags_map;
+	return tags_map_;
+}
+
+const bool Player::ready() const {
+	return data_.ready;
 }
 
 void Player::Init() {
