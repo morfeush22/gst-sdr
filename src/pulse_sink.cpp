@@ -8,9 +8,9 @@
 #include "pulse_sink.h"
 #include "player.h"
 
-static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+GstPadProbeReturn PulseSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
-	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data);
+	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(container->other_data);
 	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(container->sink_data);
 
 	GstPad *sinkpad;
@@ -22,8 +22,8 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_pad_unlink(sink_data->teepad, sinkpad);
 	gst_object_unref(sinkpad);
 
-	gst_bin_remove(GST_BIN(data->pipeline), sink_data->queue);
-	gst_bin_remove(GST_BIN(data->pipeline), sink_data->sink);
+	gst_bin_remove(GST_BIN(player_data->pipeline), sink_data->queue);
+	gst_bin_remove(GST_BIN(player_data->pipeline), sink_data->sink);
 
 	gst_element_set_state(sink_data->sink, GST_STATE_NULL);
 	gst_element_set_state(sink_data->queue, GST_STATE_NULL);
@@ -31,7 +31,7 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	gst_object_unref(sink_data->sink);
 	gst_object_unref(sink_data->queue);
 
-	gst_element_release_request_pad(data->tee, sink_data->teepad);
+	gst_element_release_request_pad(player_data->tee, sink_data->teepad);
 	gst_object_unref(sink_data->teepad);
 
 	sink_data->linked = false;
@@ -39,9 +39,8 @@ static GstPadProbeReturn UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer
 	return GST_PAD_PROBE_REMOVE;
 }
 
-PulseSink::PulseSink() {
-	data_ = new AbstractSinkHelpers::Data;
-
+PulseSink::PulseSink():
+data_(new AbstractSinkHelpers::Data) {
 	PulseSinkHelpers::Data *temp = new PulseSinkHelpers::Data;
 	temp->abstract_sink = this;
 	temp->linked = false;
@@ -61,14 +60,14 @@ void PulseSink::InitSink(void *other_data) {
 
 	data_->other_data = other_data;
 
-	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_->other_data);
+	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(data_->other_data);
 	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(data_->sink_data);
 
 	GstPad *sinkpad;
 	GstPadTemplate *templ;
 
-	templ = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(data->tee), "src_%u");
-	sink_data->teepad = gst_element_request_pad(data->tee, templ, NULL, NULL);
+	templ = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(player_data->tee), "src_%u");
+	sink_data->teepad = gst_element_request_pad(player_data->tee, templ, NULL, NULL);
 
 	char buff[100];
 
@@ -89,7 +88,7 @@ void PulseSink::InitSink(void *other_data) {
 	gst_object_ref(sink_data->queue);
 	gst_object_ref(sink_data->sink);
 
-	gst_bin_add_many(GST_BIN(data->pipeline),
+	gst_bin_add_many(GST_BIN(player_data->pipeline),
 			sink_data->queue,
 			sink_data->sink,
 			NULL);
@@ -119,7 +118,7 @@ void PulseSink::Finish() {
 		return;
 	}
 
-	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, UnlinkCall, data_, NULL);
+	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, PulseSinkHelpers::UnlinkCall, data_, NULL);
 }
 
 bool PulseSink::linked() const {

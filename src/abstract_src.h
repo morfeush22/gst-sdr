@@ -25,7 +25,8 @@ public:
 	AbstractSrc();
 	virtual ~AbstractSrc();
 
-	virtual void InitSrc(void *other_data) = 0;
+	virtual void SetSrc(void *other_data) = 0;
+	virtual void LinkSrc() = 0;
 	virtual const char *name() const = 0;
 
 };

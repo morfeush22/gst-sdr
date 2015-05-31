@@ -8,14 +8,29 @@
 #ifndef SRC_FILE_SRC_H_
 #define SRC_FILE_SRC_H_
 
+#define FILE_SRC_CAST(X) (reinterpret_cast<FileSrc *>(X))
+#define FILE_SRC_DATA_CAST(X) (reinterpret_cast<FileSrcHelpers::Data *>(X))
+
 #include "abstract_src.h"
+#include "player.h"
+
+namespace FileSrcHelpers {
+
+struct Data {
+	void *abstract_src;
+
+	GstElement *src;
+};
+
+}
 
 class FileSrc: public AbstractSrc {
 public:
 	FileSrc(const char *);
 	virtual ~FileSrc();
 
-	void InitSrc(void *);
+	void SetSrc(void *);
+	void LinkSrc();
 	const char *name() const;
 
 private:

@@ -8,8 +8,6 @@
 
 using namespace std;
 
-//uint16_t FakeSink::count_ = 0;
-
 TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 	uint32_t size;
 	ifstream in_file("./player_unittest_file.raw", ifstream::binary);
@@ -171,7 +169,6 @@ TEST(RingSrcTestDecrementRatio, decrementation_of_ratio) {
 	delete src;
 }
 
-
 TEST(RingSrcTestIncrementRatio, incrementation_of_ratio) {
 	RingSrc *src = new RingSrc(0.2, 100);
 	FakeSink *sink = new FakeSink();
@@ -185,4 +182,3 @@ TEST(RingSrcTestIncrementRatio, incrementation_of_ratio) {
 	delete sink;
 	delete src;
 }
-

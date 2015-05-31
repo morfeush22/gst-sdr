@@ -27,6 +27,8 @@ struct Data {
 	bool linked;
 };
 
+GstPadProbeReturn UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
+
 }
 
 class FileSink: public AbstractSink {
@@ -40,8 +42,9 @@ public:
 	bool linked() const;
 
 private:
-	const char *path_;
 	AbstractSinkHelpers::Data *data_;
+
+	const char *path_;
 
 };
 

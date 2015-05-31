@@ -28,6 +28,8 @@ struct Data {
 	bool linked;
 };
 
+GstPadProbeReturn UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
+
 }
 
 class FakeSink: public AbstractSink {
@@ -43,9 +45,10 @@ public:
 	void Finish();
 	bool linked() const;
 
-	void DecrementCount();
 	const uint32_t num_src_pads() const;
 	const float playback_speed() const;
+
+	friend GstPadProbeReturn FakeSinkHelpers::UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
 
 private:
 	AbstractSinkHelpers::Data *data_;

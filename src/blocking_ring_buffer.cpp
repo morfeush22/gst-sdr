@@ -25,7 +25,7 @@ size_t BlockingRingBuffer::ReadFrom(float *dest_buffer, size_t how_many) {
 	while(!DataStored() && !last_frame_)
 		pthread_cond_wait(&count_condition_not_empty_, &count_mutex_);
 
-	size_t result = buffer_.ReadFrom(dest_buffer, how_many);
+	size_t result = buffer_.sReadFrom(dest_buffer, how_many);
 
 	pthread_mutex_unlock(&count_mutex_);
 
