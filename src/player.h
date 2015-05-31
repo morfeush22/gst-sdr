@@ -27,7 +27,6 @@ struct Data {
 
 	GstElement *pipeline;
 
-	GstElement *src;
 	GstElement *iddemux;
 	GstElement *decoder;
 	GstElement *parser;

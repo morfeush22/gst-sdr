@@ -13,7 +13,7 @@ uint16_t FakeSink::count_ = 0;
 
 GstPadProbeReturn FakeSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
-	PlayerHelpers::Data *data = PLAYER_DATA_CAST(container->other_data);
+	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(container->other_data);
 	FakeSinkHelpers::Data *sink_data = FAKE_SINK_DATA_CAST(container->sink_data);
 
 	GstPad *sinkpad;
@@ -25,8 +25,8 @@ GstPadProbeReturn FakeSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info
 	gst_pad_unlink(sink_data->teepad, sinkpad);
 	gst_object_unref(sinkpad);
 
-	gst_bin_remove(GST_BIN(data->pipeline), sink_data->queue);
-	gst_bin_remove(GST_BIN(data->pipeline), sink_data->sink);
+	gst_bin_remove(GST_BIN(player_data->pipeline), sink_data->queue);
+	gst_bin_remove(GST_BIN(player_data->pipeline), sink_data->sink);
 
 	gst_element_set_state(sink_data->sink, GST_STATE_NULL);
 	gst_element_set_state(sink_data->queue, GST_STATE_NULL);
@@ -34,7 +34,7 @@ GstPadProbeReturn FakeSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info
 	gst_object_unref(sink_data->sink);
 	gst_object_unref(sink_data->queue);
 
-	gst_element_release_request_pad(data->tee, sink_data->teepad);
+	gst_element_release_request_pad(player_data->tee, sink_data->teepad);
 	gst_object_unref(sink_data->teepad);
 
 	sink_data->linked = false;
@@ -43,7 +43,7 @@ GstPadProbeReturn FakeSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info
 	return GST_PAD_PROBE_REMOVE;
 }
 
-static void SinkHandoffCall(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer sink_ptr) {
+void SinkHandoffCall(GstElement *fakesink, GstBuffer *buffer, GstPad *pad, gpointer sink_ptr) {
 	FakeSink *sink = FAKE_SINK_CAST(sink_ptr);
 
 	uint32_t size = gst_buffer_get_size(buffer);
@@ -79,14 +79,14 @@ void FakeSink::InitSink(void *other_data) {
 
 	data_->other_data = other_data;
 
-	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_->other_data);
+	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(data_->other_data);
 	FakeSinkHelpers::Data *sink_data = FAKE_SINK_DATA_CAST(data_->sink_data);
 
 	GstPad *sinkpad;
 	GstPadTemplate *templ;
 
-	templ = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(data->tee), "src_%u");
-	sink_data->teepad = gst_element_request_pad(data->tee, templ, NULL, NULL);
+	templ = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(player_data->tee), "src_%u");
+	sink_data->teepad = gst_element_request_pad(player_data->tee, templ, NULL, NULL);
 
 	char buff[100];
 	char count_buff[3];
@@ -116,7 +116,7 @@ void FakeSink::InitSink(void *other_data) {
 	gst_object_ref(sink_data->queue);
 	gst_object_ref(sink_data->sink);
 
-	gst_bin_add_many(GST_BIN(data->pipeline),
+	gst_bin_add_many(GST_BIN(player_data->pipeline),
 			sink_data->queue,
 			sink_data->sink,
 			NULL);

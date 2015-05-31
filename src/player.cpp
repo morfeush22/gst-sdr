@@ -43,8 +43,8 @@ void PlayerHelpers::SaveTags(const GstTagList *list, const gchar *tag, gpointer 
 	}
 }
 
-gboolean PlayerHelpers::BusCall(GstBus *bus, GstMessage *message, gpointer data_ptr) {
-	PlayerHelpers::Data *data = PLAYER_DATA_CAST(data_ptr);
+gboolean PlayerHelpers::BusCall(GstBus *bus, GstMessage *message, gpointer player_data_ptr) {
+	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(player_data_ptr);
 
 	switch(GST_MESSAGE_TYPE(message)) {
 
@@ -57,7 +57,7 @@ gboolean PlayerHelpers::BusCall(GstBus *bus, GstMessage *message, gpointer data_
 		g_error_free(err);
 
 		g_free(debug);
-		g_main_loop_quit(data->loop);
+		g_main_loop_quit(player_data->loop);
 		break;
 	}
 
@@ -75,7 +75,7 @@ gboolean PlayerHelpers::BusCall(GstBus *bus, GstMessage *message, gpointer data_
 
 	case GST_MESSAGE_ASYNC_DONE: {
 		g_print ("GStreamer: prerolled, lock'n'load\n");
-		data->ready = true;
+		player_data->ready = true;
 		break;
 	}
 
@@ -84,14 +84,14 @@ gboolean PlayerHelpers::BusCall(GstBus *bus, GstMessage *message, gpointer data_
 
 		gst_message_parse_tag(message, &tags);
 
-		gst_tag_list_foreach(tags, SaveTags, data->player);
+		gst_tag_list_foreach(tags, SaveTags, player_data->player);
 
 		gst_tag_list_free(tags);
 		break;
 	}
 
 	case GST_MESSAGE_EOS:
-		g_main_loop_quit(data->loop);
+		g_main_loop_quit(player_data->loop);
 		break;
 
 	default:
@@ -165,10 +165,9 @@ void Player::ConstructObjects() {
 void Player::SetPropeties() {
 	GstBus *bus;
 
-	abstract_src_->InitSrc(&data_);
+	abstract_src_->SetSrc(&data_);
 
 	gst_bin_add_many(GST_BIN(data_.pipeline),
-			data_.src,
 			data_.iddemux,
 			data_.decoder,
 			data_.parser,
@@ -231,7 +230,9 @@ void Player::Init() {
 }
 
 void Player::LinkElements() {
-	g_assert(gst_element_link_many(data_.src,
+	abstract_src_->LinkSrc();
+
+	g_assert(gst_element_link_many(
 			data_.iddemux,
 			data_.parser,
 			data_.decoder,
