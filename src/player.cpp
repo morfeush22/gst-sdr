@@ -107,6 +107,7 @@ abstract_src_(src) {
 	gst_init (NULL, NULL);
 
 	data_.player = this;
+	data_.ready = false;
 
 	Init();
 }

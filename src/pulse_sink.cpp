@@ -39,9 +39,8 @@ GstPadProbeReturn PulseSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *inf
 	return GST_PAD_PROBE_REMOVE;
 }
 
-PulseSink::PulseSink() {
-	data_ = new AbstractSinkHelpers::Data;
-
+PulseSink::PulseSink():
+data_(new AbstractSinkHelpers::Data) {
 	PulseSinkHelpers::Data *temp = new PulseSinkHelpers::Data;
 	temp->abstract_sink = this;
 	temp->linked = false;
