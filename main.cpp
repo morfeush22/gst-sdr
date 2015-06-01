@@ -7,7 +7,7 @@ using namespace std;
 
 #define BYTES 2000*10	//20kB, dlugosc bufora dla FileWrappera
 
-static FileWrapper *file_wrapper = new FileWrapper("./player_unittest_file.aac", BYTES);
+static FileWrapper *file_wrapper = new FileWrapper("./test/testdata/player_unittest_file.aac", BYTES);
 static const char *const *start = file_wrapper->GetCurrentChunkPointer();
 
 static void *ReadingThread(void *data) {

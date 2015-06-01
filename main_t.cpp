@@ -1,12 +1,11 @@
-#include "AudioDecoder/ring_buffer.h"
-#include "AudioDecoder/fake_sink.h"
-#include "AudioDecoder/file_sink.h"
-#include "AudioDecoder/file_src.h"
-#include "AudioDecoder/player.h"
-#include "AudioDecoder/pulse_sink.h"
-#include "AudioDecoder/ring_src.h"
-#include "AudioDecoder/blocking_ring_buffer.h"
-#include "AudioDecoder/ogg_sink.h"
+#include "AudioDecoder/src/fake_sink.h"
+#include "AudioDecoder/src/file_sink.h"
+#include "AudioDecoder/src/file_src.h"
+#include "AudioDecoder/src/player.h"
+#include "AudioDecoder/src/pulse_sink.h"
+#include "AudioDecoder/src/ring_src.h"
+#include "AudioDecoder/src/blocking_ring_buffer.h"
+#include "AudioDecoder/src/ogg_sink.h"
 #include "file_wrapper.h"
 #include <iostream>
 #include <unistd.h>
@@ -43,7 +42,7 @@ static gboolean RemCb(gpointer data) {
 
 #define BYTES 2000*10	//20kB
 
-static FileWrapper *file_wrapper = new FileWrapper("./player_unittest_file.aac", BYTES);
+static FileWrapper *file_wrapper = new FileWrapper("./test/testdata/player_unittest_file.aac", BYTES);
 static const char *const *start = file_wrapper->GetCurrentChunkPointer();
 
 static void *ReadingThread(void *data) {

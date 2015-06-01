@@ -1,7 +1,7 @@
-#include "AudioDecoder/player.h"
-#include "AudioDecoder/fake_sink.h"
-#include "AudioDecoder/file_src.h"
-#include "AudioDecoder/ring_src.h"
+#include "AudioDecoder/src/player.h"
+#include "AudioDecoder/src/fake_sink.h"
+#include "AudioDecoder/src/file_src.h"
+#include "AudioDecoder/src/ring_src.h"
 #include "gtest/gtest.h"
 #include <fstream>
 #include <string>

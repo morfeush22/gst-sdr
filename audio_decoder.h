@@ -8,10 +8,10 @@
 #ifndef AUDIO_DECODER_H_
 #define AUDIO_DECODER_H_
 
-#include "AudioDecoder/abstract_sink.h"
-#include "AudioDecoder/player.h"
-#include "AudioDecoder/pulse_sink.h"
-#include "AudioDecoder/ring_src.h"
+#include "AudioDecoder/src/abstract_sink.h"
+#include "AudioDecoder/src/player.h"
+#include "AudioDecoder/src/pulse_sink.h"
+#include "AudioDecoder/src/ring_src.h"
 
 class AudioDecoder {
 public:
