@@ -1,12 +1,12 @@
-#include "src/ring_buffer.h"
-#include "src/fake_sink.h"
-#include "src/file_sink.h"
-#include "src/file_src.h"
-#include "src/player.h"
-#include "src/pulse_sink.h"
-#include "src/ring_src.h"
-#include "src/blocking_ring_buffer.h"
-#include "src/ogg_sink.h"
+#include "AudioDecoder/ring_buffer.h"
+#include "AudioDecoder/fake_sink.h"
+#include "AudioDecoder/file_sink.h"
+#include "AudioDecoder/file_src.h"
+#include "AudioDecoder/player.h"
+#include "AudioDecoder/pulse_sink.h"
+#include "AudioDecoder/ring_src.h"
+#include "AudioDecoder/blocking_ring_buffer.h"
+#include "AudioDecoder/ogg_sink.h"
 #include "file_wrapper.h"
 #include <iostream>
 #include <unistd.h>
@@ -51,9 +51,9 @@ static void *ReadingThread(void *data) {
 		RingSrc *src = (RingSrc *)data;
 
 		int size = file_wrapper->GetNextChunk();
-		float *curr_ptr = reinterpret_cast<float *>(const_cast<char *>(*start));
+		uint8_t *curr_ptr = (uint8_t *)(*start);
 
-		src->Write(curr_ptr, size/sizeof(float));
+		src->Write(curr_ptr, size);
 
 		printf("##### WRITE #####\n");
 
