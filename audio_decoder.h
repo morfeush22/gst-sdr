@@ -10,7 +10,7 @@
 
 #include "AudioDecoder/src/abstract_sink.h"
 #include "AudioDecoder/src/player.h"
-#include "AudioDecoder/src/pulse_sink.h"
+#include "AudioDecoder/src/fake_sink.h"
 #include "AudioDecoder/src/ring_src.h"
 
 class AudioDecoder {
@@ -24,13 +24,13 @@ public:
 	void Write(uint8_t *, size_t);
 	void LastFrame();
 
-	const std::map<const std::string, std::string> *tags_map() const;
+	void RegisterTagsMapCallback(TagsMapCallback, void *);
 
 	void Process();
 
 private:
 	RingSrc *src_;
-	PulseSink *sink_;
+	FakeSink *sink_;
 	Player *player_;
 
 };

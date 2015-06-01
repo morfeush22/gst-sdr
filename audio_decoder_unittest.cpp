@@ -8,6 +8,18 @@
 
 using namespace std;
 
+static void SaveTags(const std::map<const std::string, std::string> *tags_map, void *other_data) {
+	map<const string, string> *other_tags_map = reinterpret_cast<map<const string, string> *>(other_data);
+	*other_tags_map = *tags_map;
+
+	/*
+	map<const string, string>::iterator it;
+	for(it = other_tags_map->begin(); it != other_tags_map->end(); it++) {
+		cout << it->first << "\t" << it->second << endl;
+	}
+	*/
+}
+
 TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 	uint32_t size;
 	ifstream in_file("./test/testdata/player_unittest_file.raw", ifstream::binary);
@@ -38,16 +50,19 @@ TEST(PlayerTestTagsTest, tags_returned) {
 	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
+	map<const string, string> temp;
+	map<const string, string>::iterator it;
+
 	Player player(src);
 	player.AddSink(sink);
+	player.RegisterTagsMapCallback(SaveTags, &temp);
 	player.Process();
 
-	map<const string, string>::const_iterator it;
 	string line;
 
 	while(getline(in_file, line)) {
-		it = player.tags_map()->find(line);
-		ASSERT_TRUE(it != player.tags_map()->end());
+		it = temp.find(line);
+		ASSERT_TRUE(it != temp.end());
 		getline(in_file, line);
 		EXPECT_FALSE(line.compare(it->second));
 	}

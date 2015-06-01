@@ -1,5 +1,6 @@
 #include "audio_decoder.h"
 #include "file_wrapper.h"
+#include "AudioDecoder/src/pulse_sink.h"
 #include <iostream>
 #include <unistd.h>
 
@@ -32,6 +33,34 @@ static void *ReadingThread(void *data) {
 	return NULL;
 }
 
+struct Data {
+	void *player;
+	void *sink;
+};
+
+static gboolean AddCb(gpointer data) {
+	cout << "###################adding sink###################" << endl;
+
+	AudioDecoder *ad = (AudioDecoder *)((Data *)data)->player;
+	PulseSink *sink = (PulseSink *)((Data *)data)->sink;
+	ad->AddSink(sink);
+
+	cout << "###################sink added###################" << endl;
+	return FALSE;
+}
+
+static gboolean RemCb(gpointer data) {
+	cout << "###################removing sink###################" << endl;
+
+	AudioDecoder *ad = (AudioDecoder *)((Data *)data)->player;
+	PulseSink *sink = (PulseSink *)((Data *)data)->sink;
+	ad->RemoveSink(sink);
+
+	cout << "###################sink removed###################" << endl;
+
+	return FALSE;
+}
+
 int main() {
 	//zmienne dla watku piszacego do AudioDecodera
 	pthread_t thread;
@@ -45,10 +74,20 @@ int main() {
 	pthread_attr_init(&attr);
 	pthread_create(&thread, &attr, ReadingThread, &audio_decoder);
 
+	PulseSink *new_sink = new PulseSink();
+
+	Data data;
+	data.player = &audio_decoder;
+	data.sink = new_sink;
+
+	g_timeout_add_seconds(10, AddCb, &data);
+	g_timeout_add_seconds(30, RemCb, &data);
+
 	//uruchamiamy processing audio
 	audio_decoder.Process();
 
 	//czyscimy, po zakonczeniu odtwarzania
+	delete new_sink;
 	delete file_wrapper;
 
 	cout << "all done..." << endl;

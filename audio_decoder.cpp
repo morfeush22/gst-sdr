@@ -9,7 +9,7 @@
 
 AudioDecoder::AudioDecoder(float threshold, size_t length) {
 	src_ = new RingSrc(threshold, length);
-	sink_ = new PulseSink();
+	sink_ = new FakeSink();
 
 	player_ = new Player(src_);
 	player_->AddSink(sink_);
@@ -37,8 +37,8 @@ void AudioDecoder::LastFrame() {
 	src_->set_last_frame(true);
 }
 
-const std::map<const std::string, std::string> *AudioDecoder::tags_map() const {
-	return player_->tags_map();
+void AudioDecoder::RegisterTagsMapCallback(TagsMapCallback cb_func, void *cb_data) {
+	player_->RegisterTagsMapCallback(cb_func, cb_data);
 }
 
 void AudioDecoder::Process() {

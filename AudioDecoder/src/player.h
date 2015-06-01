@@ -20,6 +20,8 @@
 #include <stdint.h>
 #include <string.h>
 
+typedef void (*TagsMapCallback)(const std::map<const std::string, std::string> *, void *);
+
 namespace PlayerHelpers {
 
 struct Data {
@@ -81,16 +83,15 @@ public:
 	AbstractSink *AddSink(AbstractSink *);
 
 	/**
-	 * Get tags map
-	 * @return constant pointer to tags map
-	 */
-	const std::map<const std::string, std::string> *tags_map() const;
-
-	/**
 	 * Internal ready state
 	 * @return true if player ready to change playback speed
 	 */
 	const bool ready() const;
+
+	/**
+	 * Registers tags map callback
+	 */
+	void RegisterTagsMapCallback(TagsMapCallback, void *);
 
 	friend void PlayerHelpers::SaveTags(const GstTagList *, const gchar *, gpointer);
 	friend gboolean PlayerHelpers::BusCall(GstBus *, GstMessage *, gpointer);
@@ -102,6 +103,9 @@ private:
 
 	AbstractSrc *abstract_src_;
 	std::list<AbstractSink *> abstract_sinks_;
+
+	TagsMapCallback tags_map_cb_;
+	void *tags_map_cb_data_;
 
 	void SetTagsFilters();
 
