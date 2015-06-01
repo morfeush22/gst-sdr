@@ -45,13 +45,13 @@ gboolean RingSrcHelpers::ReadData(gpointer src_data_ptr) {
 
 	GstBuffer *buffer;
 	GstMapInfo map;
-	float *it;
+	uint8_t *it;
 	size_t size;
 	GstFlowReturn ret;
 
-	buffer = gst_buffer_new_and_alloc(a_src->buff_chunk_size_*sizeof(float));
+	buffer = gst_buffer_new_and_alloc(a_src->buff_chunk_size_);
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
-	it = reinterpret_cast<float *>(map.data);
+	it = reinterpret_cast<uint8_t *>(map.data);
 
 	size = a_src->ring_buffer_->ReadFrom(it, a_src->buff_chunk_size_);
 
@@ -171,7 +171,7 @@ void RingSrc::ProcessThreshold() {
 	}
 }
 
-void RingSrc::Write(float *buffer, size_t length) {
+void RingSrc::Write(uint8_t *buffer, size_t length) {
 	ring_buffer_->WriteInto(buffer, length);
 }
 

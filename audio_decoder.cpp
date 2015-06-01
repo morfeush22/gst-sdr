@@ -29,7 +29,7 @@ AbstractSink *AudioDecoder::AddSink(AbstractSink *sink) {
 	return player_->AddSink(sink);
 }
 
-void AudioDecoder::Write(float *buffer, size_t length) {
+void AudioDecoder::Write(uint8_t *buffer, size_t length) {
 	src_->Write(buffer, length);
 }
 

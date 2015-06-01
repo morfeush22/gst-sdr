@@ -21,7 +21,7 @@ public:
 	void RemoveSink(AbstractSink *);
 	AbstractSink *AddSink(AbstractSink *);
 
-	void Write(float *, size_t);
+	void Write(uint8_t *, size_t);
 	void LastFrame();
 
 	const std::map<const std::string, std::string> *tags_map() const;

@@ -17,10 +17,10 @@ static void *ReadingThread(void *data) {
 		//czytamy z FileWrappera
 		int size = file_wrapper->GetNextChunk();
 		//FileWrapper czyta w charach, wiec konieczne sa casty
-		float *curr_ptr = reinterpret_cast<float *>(const_cast<char *>(*start));
+		uint8_t *curr_ptr = (uint8_t *)(*start);
 
-		//piszemy do AudioDecodera, dzielimy przez sizeof, bo FileWrapper czyta charami
-		ad->Write(curr_ptr, size/sizeof(float));
+		//piszemy do AudioDecodera
+		ad->Write(curr_ptr, size);
 
 		cout << "########## WRITE ##########" << endl;
 

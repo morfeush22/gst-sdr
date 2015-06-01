@@ -48,7 +48,7 @@ public:
 	size_t ParseThreshold(float);
 	void ProcessThreshold();
 
-	void Write(float *, size_t);
+	void Write(uint8_t *, size_t);
 	void set_last_frame(bool);
 
 	friend gboolean RingSrcHelpers::ReadData(gpointer);

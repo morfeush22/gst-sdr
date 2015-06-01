@@ -19,7 +19,7 @@ BlockingRingBuffer::~BlockingRingBuffer() {
 	pthread_mutex_destroy(&count_mutex_);
 }
 
-size_t BlockingRingBuffer::ReadFrom(float *dest_buffer, size_t how_many) {
+size_t BlockingRingBuffer::ReadFrom(uint8_t *dest_buffer, size_t how_many) {
 	pthread_mutex_lock(&count_mutex_);
 
 	while(!DataStored() && !last_frame_)
@@ -32,7 +32,7 @@ size_t BlockingRingBuffer::ReadFrom(float *dest_buffer, size_t how_many) {
 	return result;
 }
 
-size_t BlockingRingBuffer::WriteInto(float *source_buffer, size_t how_many) {
+size_t BlockingRingBuffer::WriteInto(uint8_t *source_buffer, size_t how_many) {
 	pthread_mutex_lock(&count_mutex_);
 
 	size_t result = buffer_.WriteInto(source_buffer, how_many);
