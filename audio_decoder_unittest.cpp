@@ -10,7 +10,7 @@ using namespace std;
 
 TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 	uint32_t size;
-	ifstream in_file("./player_unittest_file.raw", ifstream::binary);
+	ifstream in_file("./test/testdata/player_unittest_file.raw", ifstream::binary);
 	ASSERT_TRUE(in_file.good()) << "TESTING CODE FAILED... could not load data";
 
 	in_file.seekg(0, ios::end);
@@ -18,7 +18,7 @@ TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 
 	in_file.close();
 
-	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
 	Player player(src);
@@ -32,10 +32,10 @@ TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 }
 
 TEST(PlayerTestTagsTest, tags_returned) {
-	ifstream in_file("./player_unittest_tags_expected.txt");
+	ifstream in_file("./test/testdata/player_unittest_tags_expected.txt");
 	ASSERT_TRUE(in_file.good()) << "TESTING CODE FAILED... could not load data";
 
-	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
 	Player player(src);
@@ -57,7 +57,7 @@ TEST(PlayerTestTagsTest, tags_returned) {
 }
 
 TEST(PlayerTestTeeTest, number_of_src_pads) {
-	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
 	Player player(src);
@@ -70,7 +70,7 @@ TEST(PlayerTestTeeTest, number_of_src_pads) {
 }
 
 TEST(PlayerTestAddSink, incrementation_of_sink_pads) {
-	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink1 = new FakeSink();
 	FakeSink *sink2 = new FakeSink();
 	FakeSink *sink3 = new FakeSink();
@@ -89,7 +89,7 @@ TEST(PlayerTestAddSink, incrementation_of_sink_pads) {
 }
 
 TEST(PlayerTestRemoveSink, decrementation_of_sink_pads) {
-	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink1 = new FakeSink();
 	FakeSink *sink2 = new FakeSink();
 	FakeSink *sink3 = new FakeSink();
@@ -110,7 +110,7 @@ TEST(PlayerTestRemoveSink, decrementation_of_sink_pads) {
 }
 
 TEST(PlayerTestGetSrc, src_getter) {
-	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
 	Player player(src);
@@ -123,7 +123,7 @@ TEST(PlayerTestGetSrc, src_getter) {
 }
 
 TEST(PlayerTestPlaybackSpeed, setting_playback_speed) {
-	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
 	Player player(src);
@@ -137,7 +137,7 @@ TEST(PlayerTestPlaybackSpeed, setting_playback_speed) {
 }
 
 TEST(PulseSinkTestLinkage, test_of_linkage) {
-	FileSrc *src = new FileSrc("./player_unittest_file.aac");
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
 
 	EXPECT_FALSE(sink->linked());

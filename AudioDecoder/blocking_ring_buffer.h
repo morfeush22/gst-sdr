@@ -8,7 +8,7 @@
 #ifndef SRC_BLOCKING_RING_BUFFER_H_
 #define SRC_BLOCKING_RING_BUFFER_H_
 
-#include "ring_buffer.h"
+#include "RingBuffer/ring_buffer.h"
 #include <stdint.h>
 #include <pthread.h>
 
