@@ -2,7 +2,7 @@
  * pulse_sink.h
  *
  *  Created on: May 13, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #ifndef SRC_PULSE_SINK_H_
@@ -16,17 +16,24 @@
 
 namespace PulseSinkHelpers {
 
+/**
+ * @struct Data
+ * @biref This struct contains specific for PulseSink class elements
+ */
 struct Data {
-	void *abstract_sink;
+	void *abstract_sink;	/**< Pointer to "this" sink element */
 
-	GstElement *queue;
-	GstElement *sink;
-	GstPad *teepad;
+	GstElement *queue;	/**< Queue element for GStreamer */
+	GstElement *sink;	/**< Sink element for GStreamer */
+	GstPad *teepad;	/**< TeePad element for GStreamer */
 
-	gboolean removing;
-	bool linked;
+	gboolean removing;	/**< True, when sink is being removed from pipeline */
+	bool linked;	/**< True, when sink is linked in pipeline */
 };
 
+/**
+ * GStreamer callback called when unlinking sink from pipeline. Check GStreamer documentation for more
+ */
 GstPadProbeReturn UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
 
 }

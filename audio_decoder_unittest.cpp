@@ -11,13 +11,6 @@ using namespace std;
 static void SaveTags(const std::map<const std::string, std::string> *tags_map, void *other_data) {
 	map<const string, string> *other_tags_map = reinterpret_cast<map<const string, string> *>(other_data);
 	*other_tags_map = *tags_map;
-
-	/*
-	map<const string, string>::iterator it;
-	for(it = other_tags_map->begin(); it != other_tags_map->end(); it++) {
-		cout << it->first << "\t" << it->second << endl;
-	}
-	*/
 }
 
 TEST(PlayerTestBytesTest, number_of_processed_bytes) {

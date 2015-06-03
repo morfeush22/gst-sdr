@@ -2,7 +2,7 @@
  * pulse_sink.cpp
  *
  *  Created on: May 13, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #include "pulse_sink.h"

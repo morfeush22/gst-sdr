@@ -2,7 +2,7 @@
  * ogg_sink.cpp
  *
  *  Created on: May 29, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #include "ogg_sink.h"

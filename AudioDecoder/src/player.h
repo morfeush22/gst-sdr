@@ -2,7 +2,7 @@
  * player.h
  *
  *  Created on: May 13, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #ifndef SRC_PLAYER_H_
@@ -24,72 +24,94 @@ typedef void (*TagsMapCallback)(const std::map<const std::string, std::string> *
 
 namespace PlayerHelpers {
 
+/**
+ * @struct Data
+ * @biref This struct contains specific for Player class elements
+ */
 struct Data {
-	void *player;
+	void *player;	/**< Pointer to "this" Player element */
 
-	GstElement *pipeline;
+	GstElement *pipeline;	/**< Pipeline element for GStreamer */
 
-	GstElement *iddemux;
-	GstElement *decoder;
-	GstElement *parser;
-	GstElement *pitch;
-	GstElement *converter;
-	GstElement *tee;
+	GstElement *iddemux;	/**< ID3 demuxer element for GStreamer */
+	GstElement *decoder;	/**< FAAD decoder element for GStreamer */
+	GstElement *parser;	/**< AAC parser element for GStreamer */
+	GstElement *pitch;	/**< SoundTouch pitch element for GStreamer */
+	GstElement *converter;	/**< Converter element for GStreamer */
+	GstElement *tee;	/**< Tee element for GStreamer */
 
-	GMainLoop *loop;
+	GMainLoop *loop;	/**< Loop element for GStreamer */
 
-	bool ready;
+	bool ready;	/**< Ready flag */
 };
 
+/**
+ * GStreamer callback called when got tags in pipeline. Check GStreamer documentation for more
+ */
 void SaveTags(const GstTagList *, const gchar *, gpointer);
+
+/**
+ * GStreamer callback called when bus event caught. Check GStreamer documentation for more
+ */
 gboolean BusCall(GstBus *, GstMessage *, gpointer);
 
 }
 
+/**
+ * @class Player
+ * @brief Class used to manage GStreaner pipeline
+ *
+ * @author Kacper Patro patro.kacper@gmail.com
+ * @copyright Public domain
+ * @pre
+ */
 class Player {
 public:
 	/**
-	 * Play audio
-	 * @param *src pointer to AbstractSrc object
+	 * Constructor of Player
+	 * @param *src Pointer to AbstractSrc object
 	 */
 	Player(AbstractSrc *);
 	virtual ~Player();
 
 	/**
-	 * Start processing
+	 * Starts processing
 	 */
 	void Process();
 
 	/**
-	 * Get source
-	 * @return current AbstractSrc object
+	 * Gets source
+	 * @return Current AbstractSrc object
 	 */
 	const AbstractSrc *abstract_src() const;
 
 	/**
-	 * Remove sink
+	 * Removes sink
+	 * @param sink Pointer to sink object
 	 */
 	void RemoveSink(AbstractSink *);
 
 	/**
-	 * Set playback speed
+	 * Sets playback speed
 	 */
 	void set_playback_speed(float);
 
 	/**
-	 * Add new sink
-	 * @return added sink
+	 * Adds new sink
+	 * @return Added sink
 	 */
 	AbstractSink *AddSink(AbstractSink *);
 
 	/**
 	 * Internal ready state
-	 * @return true if player ready to change playback speed
+	 * @return True if Player ready to change playback speed
 	 */
 	const bool ready() const;
 
 	/**
-	 * Registers tags map callback
+	 * Registers tags map callback. cb_func will be called with cb_data passed when tags received
+	 * @param cb_func Function to be called. Must match TagsMapCallback signature
+	 * @param cb_data Data which will be passed to cb_func when called
 	 */
 	void RegisterTagsMapCallback(TagsMapCallback, void *);
 

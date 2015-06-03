@@ -2,7 +2,7 @@
  * audio_decoder.cpp
  *
  *  Created on: May 23, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #include "audio_decoder.h"
