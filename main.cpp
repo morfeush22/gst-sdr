@@ -82,6 +82,7 @@ int main() {
 
 	g_timeout_add_seconds(10, AddCb, &data);
 	g_timeout_add_seconds(30, RemCb, &data);
+	//audio_decoder.AddSink(new_sink);
 
 	//uruchamiamy processing audio
 	audio_decoder.Process();
