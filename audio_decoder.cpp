@@ -9,7 +9,7 @@
 
 AudioDecoder::AudioDecoder(float threshold, size_t length) {
 	src_ = new RingSrc(threshold, length);
-	sink_ = new FakeSink();
+	sink_ = new NullSink();
 
 	player_ = new Player(src_);
 	player_->AddSink(sink_);

@@ -10,7 +10,7 @@
 
 #include "AudioDecoder/src/abstract_sink.h"
 #include "AudioDecoder/src/player.h"
-#include "AudioDecoder/src/fake_sink.h"
+#include "AudioDecoder/src/null_sink.h"
 #include "AudioDecoder/src/ring_src.h"
 
 /**
@@ -69,7 +69,7 @@ public:
 
 private:
 	RingSrc *src_;
-	FakeSink *sink_;
+	NullSink *sink_;
 	Player *player_;
 
 };
