@@ -61,7 +61,7 @@ public:
 	 * Checks, if last frame property is set
 	 * @return True when set, false otherwise
 	 */
-	const bool last_frame() const;
+	bool last_frame() const;
 
 	/**
 	 * Sets last frame property

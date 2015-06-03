@@ -56,7 +56,7 @@ public:
 	 * Get number of bytes received at the end of pipeline
 	 * @return Number of bytes received
 	 */
-	const uint32_t bytes_returned() const;
+	uint32_t bytes_returned() const;
 
 	/**
 	 * Adds bytes to sum number of bytes received
@@ -73,13 +73,13 @@ public:
 	 * Gets number of linked sink elements
 	 * @return Number of current linked sink elements
 	 */
-	const uint32_t num_src_pads() const;
+	uint32_t num_src_pads() const;
 
 	/**
 	 * Gets current playback speed, relative to 1.0
 	 * @return Current playback speed
 	 */
-	const float playback_speed() const;
+	float playback_speed() const;
 
 	friend GstPadProbeReturn FakeSinkHelpers::UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
 

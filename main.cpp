@@ -12,7 +12,11 @@ static FileWrapper *file_wrapper = new FileWrapper("./test/testdata/player_unitt
 static const char *const *start = file_wrapper->GetCurrentChunkPointer();
 
 static void *ReadingThread(void *data) {
+	int x = 0;
 	while(1) {
+		//if(x % 10 == 0)
+		//	usleep(7000000);
+
 		AudioDecoder *ad = reinterpret_cast<AudioDecoder *>(data);
 
 		//czytamy z FileWrappera
@@ -23,12 +27,13 @@ static void *ReadingThread(void *data) {
 		//piszemy do AudioDecodera
 		ad->Write(curr_ptr, size);
 
-		cout << "########## WRITE ##########" << endl;
+		cout << "WRITE" << endl;
 
 		if(!size)	//jesli ostatnie dane, informujemy o tym AudioDecoder, by mogl wykonac procedury czyszczace
 			ad->LastFrame();
 
 		usleep(700000);	//0.7s 'snu'
+		x++;
 	}
 	return NULL;
 }
@@ -80,9 +85,9 @@ int main() {
 	data.player = &audio_decoder;
 	data.sink = new_sink;
 
-	g_timeout_add_seconds(10, AddCb, &data);
-	g_timeout_add_seconds(30, RemCb, &data);
-	//audio_decoder.AddSink(new_sink);
+	//g_timeout_add_seconds(10, AddCb, &data);
+	//g_timeout_add_seconds(30, RemCb, &data);
+	audio_decoder.AddSink(new_sink);
 
 	//uruchamiamy processing audio
 	audio_decoder.Process();

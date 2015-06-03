@@ -106,7 +106,7 @@ public:
 	 * Internal ready state
 	 * @return True if Player ready to change playback speed
 	 */
-	const bool ready() const;
+	bool ready() const;
 
 	/**
 	 * Registers tags map callback. cb_func will be called with cb_data passed when tags received
