@@ -1,17 +1,17 @@
 /*
- * pulse_sink.cpp
+ * null_sink.cpp
  *
- *  Created on: May 13, 2015
+ *  Created on: Jun 3, 2015
  *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
-#include "pulse_sink.h"
+#include "null_sink.h"
 #include "player.h"
 
-GstPadProbeReturn PulseSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+GstPadProbeReturn NullSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(container->other_data);
-	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(container->sink_data);
+	NullSinkHelpers::Data *sink_data = NULL_SINK_DATA_CAST(container->sink_data);
 
 	GstPad *sinkpad;
 
@@ -39,9 +39,9 @@ GstPadProbeReturn PulseSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *inf
 	return GST_PAD_PROBE_REMOVE;
 }
 
-PulseSink::PulseSink():
+NullSink::NullSink():
 data_(new AbstractSinkHelpers::Data) {
-	PulseSinkHelpers::Data *temp = new PulseSinkHelpers::Data;
+	NullSinkHelpers::Data *temp = new NullSinkHelpers::Data;
 	temp->abstract_sink = this;
 	temp->linked = false;
 
@@ -49,19 +49,19 @@ data_(new AbstractSinkHelpers::Data) {
 	data_->other_data = NULL;
 }
 
-PulseSink::~PulseSink() {
-	delete PULSE_SINK_DATA_CAST(data_->sink_data);
+NullSink::~NullSink() {
+	delete NULL_SINK_DATA_CAST(data_->sink_data);
 	delete data_;
 }
 
-void PulseSink::InitSink(void *other_data) {
+void NullSink::InitSink(void *other_data) {
 	if(linked())
 		return;
 
 	data_->other_data = other_data;
 
 	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(data_->other_data);
-	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(data_->sink_data);
+	NullSinkHelpers::Data *sink_data = NULL_SINK_DATA_CAST(data_->sink_data);
 
 	GstPad *sinkpad;
 	GstPadTemplate *templ;
@@ -109,18 +109,18 @@ void PulseSink::InitSink(void *other_data) {
 	sink_data->linked = true;
 }
 
-const char *PulseSink::name() const {
-	return "pulsesink";
+const char *NullSink::name() const {
+	return "fakesink";
 }
 
-void PulseSink::Finish() {
+void NullSink::Finish() {
 	if(!linked()) {
 		return;
 	}
 
-	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, PulseSinkHelpers::UnlinkCall, data_, NULL);
+	gst_pad_add_probe(NULL_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, NullSinkHelpers::UnlinkCall, data_, NULL);
 }
 
-bool PulseSink::linked() const {
-	return PULSE_SINK_DATA_CAST(data_->sink_data)->linked;
+bool NullSink::linked() const {
+	return NULL_SINK_DATA_CAST(data_->sink_data)->linked;
 }

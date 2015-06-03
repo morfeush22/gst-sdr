@@ -2,7 +2,7 @@
  * ring_src.cpp
  *
  *  Created on: May 17, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #include "ring_src.h"

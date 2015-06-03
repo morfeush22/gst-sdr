@@ -2,7 +2,7 @@
  * blocking_ring_buffer.cpp
  *
  *  Created on: May 24, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #include "blocking_ring_buffer.h"

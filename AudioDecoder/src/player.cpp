@@ -2,7 +2,7 @@
  * player.cpp
  *
  *  Created on: May 13, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #include "player.h"
@@ -40,6 +40,12 @@ void PlayerHelpers::SaveTags(const GstTagList *list, const gchar *tag, gpointer 
 				 gst_date_time_unref(time);
 			}
 		}
+	}
+
+	if(player->tags_map_cb_ != NULL) {
+		player->tags_map_cb_(player->tags_map_, player->tags_map_cb_data_);
+		//for(it = player->tags_map_->begin(); it != player->tags_map_->end(); it++)
+		//	it->second = "";
 	}
 }
 
@@ -103,7 +109,9 @@ gboolean PlayerHelpers::BusCall(GstBus *bus, GstMessage *message, gpointer playe
 
 Player::Player(AbstractSrc *src):
 tags_map_(new std::map<const std::string, std::string>),
-abstract_src_(src) {
+abstract_src_(src),
+tags_map_cb_(NULL),
+tags_map_cb_data_(NULL) {
 	gst_init (NULL, NULL);
 
 	data_.player = this;
@@ -215,10 +223,6 @@ void Player::RemoveSink(AbstractSink *sink) {
 	}
 }
 
-const std::map<const std::string, std::string> *Player::tags_map() const {
-	return tags_map_;
-}
-
 const bool Player::ready() const {
 	return data_.ready;
 }
@@ -249,4 +253,9 @@ const AbstractSrc *Player::abstract_src() const {
 
 void Player::set_playback_speed(float ratio) {
 	g_object_set(G_OBJECT(data_.pitch), "tempo", ratio, NULL);
+}
+
+void Player::RegisterTagsMapCallback(TagsMapCallback cb_func, void *cb_data) {
+	tags_map_cb_ = cb_func;
+	tags_map_cb_data_ = cb_data;
 }

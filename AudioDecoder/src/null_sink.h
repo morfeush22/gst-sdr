@@ -1,24 +1,24 @@
 /*
- * pulse_sink.h
+ * null_sink.h
  *
- *  Created on: May 13, 2015
+ *  Created on: Jun 3, 2015
  *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
-#ifndef SRC_PULSE_SINK_H_
-#define SRC_PULSE_SINK_H_
+#ifndef AUDIODECODER_SRC_NULL_SINK_H_
+#define AUDIODECODER_SRC_NULL_SINK_H_
 
-#define PULSE_SINK_CAST(X) (reinterpret_cast<PulseSink *>(X))
-#define PULSE_SINK_DATA_CAST(X) (reinterpret_cast<PulseSinkHelpers::Data *>(X))
+#define NULL_SINK_CAST(X) (reinterpret_cast<NullSink *>(X))
+#define NULL_SINK_DATA_CAST(X) (reinterpret_cast<NullSinkHelpers::Data *>(X))
 
 #include "abstract_sink.h"
 #include <gst/gst.h>
 
-namespace PulseSinkHelpers {
+namespace NullSinkHelpers {
 
 /**
  * @struct Data
- * @biref This struct contains specific for PulseSink class elements
+ * @biref This struct contains specific for NullSink class elements
  */
 struct Data {
 	void *abstract_sink;	/**< Pointer to "this" sink element */
@@ -38,19 +38,29 @@ GstPadProbeReturn UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
 
 }
 
-class PulseSink: public AbstractSink {
+/**
+ * @class NullSink
+ * @brief Base class to keep input buffer empty when not playing
+ *
+ * @author Kacper Patro patro.kacper@gmail.com
+ * @copyright Public domain
+ * @pre
+ */
+class NullSink: public AbstractSink {
 public:
-	PulseSink();
-	virtual ~PulseSink();
+	NullSink();
+	virtual ~NullSink();
 
 	void InitSink(void *);
 	const char *name() const;
 	void Finish();
 	bool linked() const;
 
+	friend GstPadProbeReturn NullSinkHelpers::UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
+
 private:
 	AbstractSinkHelpers::Data *data_;
 
 };
 
-#endif /* SRC_PULSE_SINK_H_ */
+#endif /* AUDIODECODER_SRC_NULL_SINK_H_ */

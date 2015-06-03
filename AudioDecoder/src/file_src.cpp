@@ -2,7 +2,7 @@
  * file_src.cpp
  *
  *  Created on: May 13, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #include "file_src.h"

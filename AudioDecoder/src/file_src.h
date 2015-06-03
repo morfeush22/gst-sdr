@@ -2,7 +2,7 @@
  * file_src.h
  *
  *  Created on: May 13, 2015
- *      Author: morfeush22
+ *      Author: Kacper Patro patro.kacper@gmail.com
  */
 
 #ifndef SRC_FILE_SRC_H_
@@ -16,16 +16,32 @@
 
 namespace FileSrcHelpers {
 
+/**
+ * @struct Data
+ * @biref This struct contains specific for FileSrc class elements
+ */
 struct Data {
-	void *abstract_src;
+	void *abstract_src;	/**< Pointer to "this" src element */
 
-	GstElement *src;
+	GstElement *src;	/**< Src element for GStreamer */
 };
 
 }
 
+/**
+ * @class FileSrc
+ * @brief Class used to read from audio files
+ *
+ * @author Kacper Patro patro.kacper@gmail.com
+ * @copyright Public domain
+ * @pre
+ */
 class FileSrc: public AbstractSrc {
 public:
+	/**
+	 * Constructor of FileSrc
+	 * @param path Path to input file
+	 */
 	FileSrc(const char *);
 	virtual ~FileSrc();
 
