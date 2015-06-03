@@ -50,7 +50,9 @@ data_(new AbstractSinkHelpers::Data) {
 }
 
 NullSink::~NullSink() {
-	delete NULL_SINK_DATA_CAST(data_->sink_data);
+	NullSinkHelpers::Data *sink_data = NULL_SINK_DATA_CAST(data_->sink_data);
+
+	delete sink_data;
 	delete data_;
 }
 

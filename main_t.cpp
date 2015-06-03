@@ -7,10 +7,12 @@ using namespace std;
 int main() {
 	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	OggSink *sink = new OggSink("./test/testdata/player_unittest_file.ogg");
-	Player player(src);
-	player.AddSink(sink);
-	player.Process();
+	Player *player = new Player(src);
 
+	player->AddSink(sink);
+	player->Process();
+
+	delete player;
 	delete src;
 	delete sink;
 }

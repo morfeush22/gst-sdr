@@ -51,7 +51,9 @@ path_(path) {
 }
 
 FileSink::~FileSink() {
-	delete FILE_SINK_DATA_CAST(data_->sink_data);
+	FileSinkHelpers::Data *sink_data = FILE_SINK_DATA_CAST(data_->sink_data);
+
+	delete sink_data;
 	delete data_;
 }
 
@@ -84,9 +86,8 @@ void FileSink::InitSink(void *other_data) {
 	sink_data->sink = gst_element_factory_make(name(), buff);
 	g_assert(sink_data->sink);
 
-	g_object_set(sink_data->sink, "location", path_,
-			sink_data->sink, "async", FALSE,
-			NULL);
+	g_object_set(sink_data->sink, "location", path_, NULL);
+	g_object_set(sink_data->sink, "async", FALSE, NULL);
 
 	sink_data->removing = FALSE;
 

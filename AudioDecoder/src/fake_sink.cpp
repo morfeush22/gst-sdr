@@ -63,11 +63,13 @@ bytes_returned_(0) {
 }
 
 FakeSink::~FakeSink() {
-	delete FAKE_SINK_DATA_CAST(data_->sink_data);
+	FakeSinkHelpers::Data *sink_data = FAKE_SINK_DATA_CAST(data_->sink_data);
+
+	delete sink_data;
 	delete data_;
 }
 
-const uint32_t FakeSink::bytes_returned() const {
+uint32_t FakeSink::bytes_returned() const {
 	return bytes_returned_;
 }
 
@@ -157,13 +159,13 @@ bool FakeSink::linked() const {
 	return FAKE_SINK_DATA_CAST(data_->sink_data)->linked;
 }
 
-const uint32_t FakeSink::num_src_pads() const {
+uint32_t FakeSink::num_src_pads() const {
 	gint num;
 	g_object_get(G_OBJECT(PLAYER_DATA_CAST(data_->other_data)->tee), "num-src-pads", &num, NULL);
 	return num;
 }
 
-const float FakeSink::playback_speed() const {
+float FakeSink::playback_speed() const {
 	gfloat num;
 	g_object_get(G_OBJECT(PLAYER_DATA_CAST(data_->other_data)->pitch), "tempo", &num, NULL);
 	return num;

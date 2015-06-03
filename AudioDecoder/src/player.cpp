@@ -121,6 +121,15 @@ tags_map_cb_data_(NULL) {
 }
 
 Player::~Player() {
+	std::list<AbstractSink *>::iterator it;
+	it = abstract_sinks_.begin();
+
+	while(it != abstract_sinks_.end()) {
+		(*it)->Finish();
+		it = abstract_sinks_.erase(it);
+	}
+
+	gst_object_unref(data_.pipeline);
 	delete tags_map_;
 }
 
@@ -130,21 +139,12 @@ void Player::Process() {
 		return;
 	}
 
-	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline), GST_STATE_PLAYING);
+	gst_element_set_state(data_.pipeline, GST_STATE_PLAYING);
 	data_.loop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(data_.loop);
 	g_main_loop_unref(data_.loop);
 
-	std::list<AbstractSink *>::iterator it;
-	it = abstract_sinks_.begin();
-
-	while(it != abstract_sinks_.end()) {
-		(*it)->Finish();
-		it = abstract_sinks_.erase(it);
-	}
-
-	gst_element_set_state(reinterpret_cast<GstElement *>(data_.pipeline), GST_STATE_NULL);
-	gst_object_unref(data_.pipeline);
+	gst_element_set_state(data_.pipeline, GST_STATE_NULL);
 
 	data_.ready = false;
 }
@@ -223,7 +223,7 @@ void Player::RemoveSink(AbstractSink *sink) {
 	}
 }
 
-const bool Player::ready() const {
+bool Player::ready() const {
 	return data_.ready;
 }
 

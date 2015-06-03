@@ -50,7 +50,9 @@ data_(new AbstractSinkHelpers::Data) {
 }
 
 PulseSink::~PulseSink() {
-	delete PULSE_SINK_DATA_CAST(data_->sink_data);
+	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(data_->sink_data);
+
+	delete sink_data;
 	delete data_;
 }
 

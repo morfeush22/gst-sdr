@@ -71,28 +71,29 @@ int main() {
 	pthread_t thread;
 	pthread_attr_t attr;
 
-	AudioDecoder audio_decoder(0.1, 50*10000);	//pierwszy parametr to threshold, powinien zawierac sie w (0, 0.5), stanowi prog, dla ktorego odbywal sie bedzie resampling
+	AudioDecoder *audio_decoder = new AudioDecoder(0.1, 50*10000);	//pierwszy parametr to threshold, powinien zawierac sie w (0, 0.5), stanowi prog, dla ktorego odbywal sie bedzie resampling
 												//drugi to wielkosc wewnetrznego bufora kolowego, moze nie dzialac, gdy bedzie za mala;
 												//w pliku ring_src.cpp jest pare parametrow do konfiguracji, w tym przypadku dlugosc bufora powinna byc podzielna przez 250 i 10000
 
 	//uruchamiamy watek piszacy
 	pthread_attr_init(&attr);
-	pthread_create(&thread, &attr, ReadingThread, &audio_decoder);
+	pthread_create(&thread, &attr, ReadingThread, audio_decoder);
 
 	PulseSink *new_sink = new PulseSink();
 
 	Data data;
-	data.player = &audio_decoder;
+	data.player = audio_decoder;
 	data.sink = new_sink;
 
-	//g_timeout_add_seconds(10, AddCb, &data);
-	//g_timeout_add_seconds(30, RemCb, &data);
-	audio_decoder.AddSink(new_sink);
+	//g_timeout_add_seconds(1, AddCb, &data);
+	//g_timeout_add_seconds(10, RemCb, &data);
+	audio_decoder->AddSink(new_sink);
 
 	//uruchamiamy processing audio
-	audio_decoder.Process();
+	audio_decoder->Process();
 
 	//czyscimy, po zakonczeniu odtwarzania
+	delete audio_decoder;
 	delete new_sink;
 	delete file_wrapper;
 

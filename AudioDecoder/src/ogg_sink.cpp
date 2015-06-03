@@ -57,7 +57,9 @@ path_(path) {
 }
 
 OggSink::~OggSink() {
-	delete OGG_SINK_DATA_CAST(data_->sink_data);
+	OggSinkHelpers::Data *sink_data = OGG_SINK_DATA_CAST(data_->sink_data);
+
+	delete sink_data;
 	delete data_;
 }
 
@@ -102,9 +104,8 @@ void OggSink::InitSink(void *other_data) {
 	sink_data->sink = gst_element_factory_make("filesink", buff);
 	g_assert(sink_data->sink);
 
-	g_object_set(sink_data->sink, "location", path_,
-			sink_data->sink, "async", FALSE,
-			NULL);
+	g_object_set(sink_data->sink, "location", path_, NULL);
+	g_object_set(sink_data->sink, "async", FALSE, NULL);
 
 	sink_data->removing = FALSE;
 
