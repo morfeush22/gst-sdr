@@ -10,35 +10,15 @@
 
 void PlayerHelpers::SaveTags(const GstTagList *list, const gchar *tag, gpointer data_ptr) {
 	Player *player = PLAYER_CAST(data_ptr);
-	std::map<const std::string, std::string>::iterator it;
+	std::map<const std::string, std::string>::iterator t_it;
+	std::map<const std::string, TagsMapParser>::iterator f_it;
 
 	gint count = gst_tag_list_get_tag_size(list, tag);
 
 	for(gint i = 0; i < count; i++) {
-		if((it = player->tags_map_->find(gst_tag_get_nick(tag))) != player->tags_map_->end()) {
-			if(gst_tag_get_type(tag) == G_TYPE_STRING) {
-				gchar *string;
-
-				gst_tag_list_get_string_index(list, tag, i, &string);
-
-				std::string temp = std::string(string);
-				it->second = temp;
-
-				g_free(string);
-			}
-			else {
-				 GstDateTime *time;
-
-				 gst_tag_list_get_date_time_index(list, tag, i, &time);
-				 gint year = gst_date_time_get_year(time);
-
-				 std::ostringstream t;
-				 t << year;
-				 std::string temp = t.str();
-				 it->second = temp;
-
-				 gst_date_time_unref(time);
-			}
+		if((t_it = player->tags_map_->find(gst_tag_get_nick(tag))) != player->tags_map_->end()) {	//if we are interested in this tag
+			if((f_it = player->tags_map_parsers_->find(gst_tag_get_nick(tag))) != player->tags_map_parsers_->end())	//if this tag has parser function
+				 f_it->second(list, tag, i, &t_it->second);
 		}
 	}
 
@@ -109,7 +89,9 @@ gboolean PlayerHelpers::BusCall(GstBus *bus, GstMessage *message, gpointer playe
 
 Player::Player(AbstractSrc *src):
 tags_map_(new std::map<const std::string, std::string>),
+tags_map_parsers_(new std::map<const std::string, TagsMapParser>),
 abstract_src_(src),
+abstract_sinks_(new std::list<AbstractSink *>),
 tags_map_cb_(NULL),
 tags_map_cb_data_(NULL) {
 	gst_init (NULL, NULL);
@@ -122,19 +104,21 @@ tags_map_cb_data_(NULL) {
 
 Player::~Player() {
 	std::list<AbstractSink *>::iterator it;
-	it = abstract_sinks_.begin();
+	it = abstract_sinks_->begin();
 
-	while(it != abstract_sinks_.end()) {
+	while(it != abstract_sinks_->end()) {
 		(*it)->Finish();
-		it = abstract_sinks_.erase(it);
+		it = abstract_sinks_->erase(it);
 	}
+	delete abstract_sinks_;
 
 	gst_object_unref(data_.pipeline);
+	delete tags_map_parsers_;
 	delete tags_map_;
 }
 
 void Player::Process() {
-	if(!abstract_sinks_.size()) {
+	if(!abstract_sinks_->size()) {
 		g_print("GStreamer: no sinks\n");
 		return;
 	}
@@ -193,29 +177,35 @@ void Player::SetPropeties() {
 }
 
 void Player::SetTagsFilters() {
-	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_TITLE, ""));
-	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_ARTIST, ""));
-	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_ALBUM, ""));
-	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_GENRE, ""));
-	tags_map_->insert(std::pair<const std::string, std::string>(GST_TAG_DATE_TIME, ""));
+	tags_map_->insert(std::make_pair(GST_TAG_TITLE, ""));
+	tags_map_->insert(std::make_pair(GST_TAG_ARTIST, ""));
+	tags_map_->insert(std::make_pair(GST_TAG_ALBUM, ""));
+	tags_map_->insert(std::make_pair(GST_TAG_GENRE, ""));
+	tags_map_->insert(std::make_pair(GST_TAG_DATE_TIME, ""));
+
+	tags_map_parsers_->insert(std::make_pair(GST_TAG_TITLE, PlayerHelpers::ParseStringTag));
+	tags_map_parsers_->insert(std::make_pair(GST_TAG_ARTIST, PlayerHelpers::ParseStringTag));
+	tags_map_parsers_->insert(std::make_pair(GST_TAG_ALBUM, PlayerHelpers::ParseStringTag));
+	tags_map_parsers_->insert(std::make_pair(GST_TAG_GENRE, PlayerHelpers::ParseStringTag));
+	tags_map_parsers_->insert(std::make_pair(GST_TAG_DATE_TIME, PlayerHelpers::ParseDataTag));
 }
 
 AbstractSink *Player::AddSink(AbstractSink *sink) {
 	sink->InitSink(&data_);
-	abstract_sinks_.push_back(sink);
+	abstract_sinks_->push_back(sink);
 
 	return sink;
 }
 
 void Player::RemoveSink(AbstractSink *sink) {
 	std::list<AbstractSink *>::iterator it;
-	it = abstract_sinks_.begin();
-	while(it != abstract_sinks_.end()) {
+	it = abstract_sinks_->begin();
+	while(it != abstract_sinks_->end()) {
 		if(*it == sink) {
 			(*it)->Finish();
-			abstract_sinks_.erase(it);
+			abstract_sinks_->erase(it);
 
-			if(!abstract_sinks_.size())
+			if(!abstract_sinks_->size())
 				gst_element_set_state(data_.pipeline, GST_STATE_NULL);
 			return;
 		}
@@ -258,4 +248,31 @@ void Player::set_playback_speed(float ratio) {
 void Player::RegisterTagsMapCallback(TagsMapCallback cb_func, void *cb_data) {
 	tags_map_cb_ = cb_func;
 	tags_map_cb_data_ = cb_data;
+}
+
+void PlayerHelpers::ParseStringTag(const GstTagList *list, const gchar *tag, gint index, void *ptr_to_elem) {
+	std::string *elem_data = reinterpret_cast<std::string *>(ptr_to_elem);
+	gchar *string;
+
+	gst_tag_list_get_string_index(list, tag, index, &string);
+
+	std::string temp = std::string(string);
+	*(elem_data) = temp;
+
+	g_free(string);
+}
+
+void PlayerHelpers::ParseDataTag(const GstTagList *list, const gchar *tag, gint index, void *ptr_to_elem) {
+	std::string *elem_data = reinterpret_cast<std::string *>(ptr_to_elem);
+	GstDateTime *time;
+
+	gst_tag_list_get_date_time_index(list, tag, index, &time);
+	gint year = gst_date_time_get_year(time);
+
+	std::ostringstream t;
+	t << year;
+	std::string temp = t.str();
+	*(elem_data) = temp;
+
+	gst_date_time_unref(time);
 }

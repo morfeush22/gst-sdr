@@ -21,6 +21,7 @@
 #include <string.h>
 
 typedef void (*TagsMapCallback)(const std::map<const std::string, std::string> *, void *);
+typedef void (*TagsMapParser)(const GstTagList *, const gchar *, gint, void *);
 
 namespace PlayerHelpers {
 
@@ -44,6 +45,9 @@ struct Data {
 
 	bool ready;	/**< Ready flag */
 };
+
+void ParseStringTag(const GstTagList *, const gchar *, gint, void *);
+void ParseDataTag(const GstTagList *, const gchar *, gint, void *);
 
 extern "C" {
 /**
@@ -125,9 +129,10 @@ private:
 	PlayerHelpers::Data data_;
 
 	std::map<const std::string, std::string> *tags_map_;
+	std::map<const std::string, TagsMapParser> *tags_map_parsers_;
 
 	AbstractSrc *abstract_src_;
-	std::list<AbstractSink *> abstract_sinks_;
+	std::list<AbstractSink *> *abstract_sinks_;
 
 	TagsMapCallback tags_map_cb_;
 	void *tags_map_cb_data_;
