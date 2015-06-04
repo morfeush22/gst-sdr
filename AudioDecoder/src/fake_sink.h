@@ -35,7 +35,7 @@ struct Data {
 /**
  * GStreamer callback called when unlinking sink from pipeline. Check GStreamer documentation for more
  */
-GstPadProbeReturn UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
+extern "C" GstPadProbeReturn UnlinkCallFakeSink(GstPad *, GstPadProbeInfo *, gpointer);
 
 }
 
@@ -81,7 +81,7 @@ public:
 	 */
 	float playback_speed() const;
 
-	friend GstPadProbeReturn FakeSinkHelpers::UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
+	friend GstPadProbeReturn FakeSinkHelpers::UnlinkCallFakeSink(GstPad *, GstPadProbeInfo *, gpointer);
 
 private:
 	AbstractSinkHelpers::Data *data_;

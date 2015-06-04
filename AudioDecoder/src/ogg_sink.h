@@ -36,7 +36,7 @@ struct Data {
 /**
  * GStreamer callback called when unlinking sink from pipeline. Check GStreamer documentation for more
  */
-GstPadProbeReturn UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
+extern "C" GstPadProbeReturn UnlinkCallOggSink(GstPad *, GstPadProbeInfo *, gpointer);
 
 }
 

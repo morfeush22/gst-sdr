@@ -42,7 +42,6 @@ const char *RingSrc::name() const {
 gboolean RingSrcHelpers::ReadData(gpointer src_data_ptr) {
 	RingSrcHelpers::Data *src_data = RING_SRC_DATA_CAST(src_data_ptr);
 	RingSrc *a_src = RING_SRC_CAST(src_data->abstract_src);
-	GstElement *curr_pipe = GST_ELEMENT_PARENT(src_data->src);
 
 	GstBuffer *buffer;
 	GstMapInfo map;
@@ -56,15 +55,7 @@ gboolean RingSrcHelpers::ReadData(gpointer src_data_ptr) {
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
 	it = reinterpret_cast<uint8_t *>(map.data);
 
-	if(!a_src->ring_buffer_->DataStored()) {
-		g_assert(gst_element_set_state(curr_pipe, GST_STATE_PAUSED));
-		paused = TRUE;
-	}
-
 	size = a_src->ring_buffer_->ReadFrom(it, a_src->buff_chunk_size_);
-
-	if(paused == TRUE)
-		g_assert(gst_element_set_state(curr_pipe, GST_STATE_PLAYING));
 
 	gst_buffer_unmap(buffer, &map);
 

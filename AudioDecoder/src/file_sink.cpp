@@ -8,7 +8,7 @@
 #include "file_sink.h"
 #include "player.h"
 
-GstPadProbeReturn FileSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+GstPadProbeReturn FileSinkHelpers::UnlinkCallFileSink(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(container->other_data);
 	FileSinkHelpers::Data *sink_data = FILE_SINK_DATA_CAST(container->sink_data);
@@ -124,7 +124,7 @@ void FileSink::Finish() {
 		return;
 	}
 
-	gst_pad_add_probe(FILE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, FileSinkHelpers::UnlinkCall, data_, NULL);
+	gst_pad_add_probe(FILE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, FileSinkHelpers::UnlinkCallFileSink, data_, NULL);
 }
 
 bool FileSink::linked() const {

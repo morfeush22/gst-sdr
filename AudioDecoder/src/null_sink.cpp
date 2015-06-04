@@ -8,7 +8,7 @@
 #include "null_sink.h"
 #include "player.h"
 
-GstPadProbeReturn NullSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+GstPadProbeReturn NullSinkHelpers::UnlinkCallNullSink(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(container->other_data);
 	NullSinkHelpers::Data *sink_data = NULL_SINK_DATA_CAST(container->sink_data);
@@ -122,7 +122,7 @@ void NullSink::Finish() {
 		return;
 	}
 
-	gst_pad_add_probe(NULL_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, NullSinkHelpers::UnlinkCall, data_, NULL);
+	gst_pad_add_probe(NULL_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, NullSinkHelpers::UnlinkCallNullSink, data_, NULL);
 }
 
 bool NullSink::linked() const {

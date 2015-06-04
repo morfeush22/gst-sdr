@@ -31,10 +31,23 @@ struct Data {
 	bool linked;	/**< True, when sink is linked in pipeline */
 };
 
+extern "C" {
 /**
  * GStreamer callback called when unlinking sink from pipeline. Check GStreamer documentation for more
  */
-GstPadProbeReturn UnlinkCall(GstPad *, GstPadProbeInfo *, gpointer);
+GstPadProbeReturn UnlinkCallPulseSink(GstPad *, GstPadProbeInfo *, gpointer);
+
+/**
+ * GStreamer callback called when queue is empty. Check GStreamer documentation for more
+ */
+void QueueUnderrun(GstElement *, gpointer);
+
+/**
+ * GStreamer callback called when queue has enough data. Check GStreamer documentation for more
+ */
+void QueuePushing(GstElement *, gpointer);
+
+}
 
 }
 

@@ -11,7 +11,7 @@
 
 uint16_t FakeSink::count_ = 0;
 
-GstPadProbeReturn FakeSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+GstPadProbeReturn FakeSinkHelpers::UnlinkCallFakeSink(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(container->other_data);
 	FakeSinkHelpers::Data *sink_data = FAKE_SINK_DATA_CAST(container->sink_data);
@@ -152,7 +152,7 @@ void FakeSink::Finish() {
 		return;
 	}
 
-	gst_pad_add_probe(FAKE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, FakeSinkHelpers::UnlinkCall, data_, NULL);
+	gst_pad_add_probe(FAKE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, FakeSinkHelpers::UnlinkCallFakeSink, data_, NULL);
 }
 
 bool FakeSink::linked() const {

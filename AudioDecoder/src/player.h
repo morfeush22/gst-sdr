@@ -45,6 +45,7 @@ struct Data {
 	bool ready;	/**< Ready flag */
 };
 
+extern "C" {
 /**
  * GStreamer callback called when got tags in pipeline. Check GStreamer documentation for more
  */
@@ -54,6 +55,8 @@ void SaveTags(const GstTagList *, const gchar *, gpointer);
  * GStreamer callback called when bus event caught. Check GStreamer documentation for more
  */
 gboolean BusCall(GstBus *, GstMessage *, gpointer);
+
+}
 
 }
 

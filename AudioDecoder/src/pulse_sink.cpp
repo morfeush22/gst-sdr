@@ -8,7 +8,7 @@
 #include "pulse_sink.h"
 #include "player.h"
 
-GstPadProbeReturn PulseSinkHelpers::UnlinkCall(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
+GstPadProbeReturn PulseSinkHelpers::UnlinkCallPulseSink(GstPad *pad, GstPadProbeInfo *info, gpointer container_ptr) {
 	AbstractSinkHelpers::Data *container = ABSTRACT_SINK_DATA_CAST(container_ptr);
 	PlayerHelpers::Data *player_data = PLAYER_DATA_CAST(container->other_data);
 	PulseSinkHelpers::Data *sink_data = PULSE_SINK_DATA_CAST(container->sink_data);
@@ -79,6 +79,10 @@ void PulseSink::InitSink(void *other_data) {
 	sink_data->queue = gst_element_factory_make("queue", buff);
 	g_assert(sink_data->queue);
 
+	//g_object_set(sink_data->queue, "leaky", 2, NULL);	//2 - leaky on downstream (old buffers)
+	g_signal_connect(sink_data->queue, "underrun", G_CALLBACK(PulseSinkHelpers::QueueUnderrun), player_data->pipeline);
+	g_signal_connect(sink_data->queue, "pushing", G_CALLBACK(PulseSinkHelpers::QueuePushing), player_data->pipeline);
+
 	strcpy(buff, name());
 	strcat(buff, "_sink");
 
@@ -122,9 +126,19 @@ void PulseSink::Finish() {
 		return;
 	}
 
-	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, PulseSinkHelpers::UnlinkCall, data_, NULL);
+	gst_pad_add_probe(PULSE_SINK_DATA_CAST(data_->sink_data)->teepad, GST_PAD_PROBE_TYPE_IDLE, PulseSinkHelpers::UnlinkCallPulseSink, data_, NULL);
 }
 
 bool PulseSink::linked() const {
 	return PULSE_SINK_DATA_CAST(data_->sink_data)->linked;
+}
+
+void PulseSinkHelpers::QueueUnderrun(GstElement *queue, gpointer pipeline) {
+	GstElement *curr_pipe = reinterpret_cast<GstElement *>(pipeline);
+	g_assert(gst_element_set_state(curr_pipe, GST_STATE_PAUSED));
+}
+
+void PulseSinkHelpers::QueuePushing(GstElement *queue, gpointer pipeline) {
+	GstElement *curr_pipe = reinterpret_cast<GstElement *>(pipeline);
+	g_assert(gst_element_set_state(curr_pipe, GST_STATE_PLAYING));
 }

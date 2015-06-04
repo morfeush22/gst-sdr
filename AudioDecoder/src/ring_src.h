@@ -31,6 +31,7 @@ struct Data {
 	guint source_id;	/**< SID, needed by GStreamer callbacks*/
 };
 
+extern "C" {
 /**
  * GStreamer callback called when feed started. Check GStreamer documentation for more
  */
@@ -45,6 +46,8 @@ void StartFeed(GstElement *, guint, gpointer);
  * GStreamer callback called when feeding should be stopped. Check GStreamer documentation for more
  */
 void StopFeed(GstElement *, gpointer);
+
+}
 
 }
 
