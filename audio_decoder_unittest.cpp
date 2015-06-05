@@ -2,15 +2,30 @@
 #include "AudioDecoder/src/fake_sink.h"
 #include "AudioDecoder/src/file_src.h"
 #include "AudioDecoder/src/ring_src.h"
+#include "AudioDecoder/src/pulse_sink.h"
+#include "audio_decoder.h"
 #include "gtest/gtest.h"
 #include <fstream>
 #include <string>
 
 using namespace std;
 
+struct Data {
+	void *player;
+	void *sink;
+};
+
 static void SaveTags(const std::map<const std::string, std::string> *tags_map, void *other_data) {
 	map<const string, string> *other_tags_map = reinterpret_cast<map<const string, string> *>(other_data);
 	*other_tags_map = *tags_map;
+}
+
+static gboolean RemoveSink(gpointer data) {
+	Player *player = reinterpret_cast<Player *>(reinterpret_cast<Data *>(data)->player);
+	PulseSink *sink = reinterpret_cast<PulseSink *>(reinterpret_cast<Data *>(data)->sink);
+	player->RemoveSink(sink);
+
+	return FALSE;
 }
 
 TEST(PlayerTestBytesTest, number_of_processed_bytes) {
@@ -198,5 +213,28 @@ TEST(RingSrcTestIncrementRatio, incrementation_of_ratio) {
 
 	delete player;
 	delete sink;
+	delete src;
+}
+
+TEST(PlayerTest10sPlay, play_10s_of_audio) {
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
+	NullSink *null_sink = new NullSink();
+	PulseSink *sink = new PulseSink();
+
+	Player *player = new Player(src);
+
+	Data data;
+	data.player = player;
+	data.sink = sink;
+
+	player->AddSink(null_sink);
+	player->AddSink(sink);
+	g_timeout_add_seconds(10, RemoveSink, &data);
+
+	player->Process();
+
+	delete player;
+	delete sink;
+	delete null_sink;
 	delete src;
 }
