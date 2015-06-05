@@ -3,6 +3,7 @@
 #include "AudioDecoder/src/file_src.h"
 #include "AudioDecoder/src/ring_src.h"
 #include "AudioDecoder/src/pulse_sink.h"
+#include "AudioDecoder/src/ogg_sink.h"
 #include "audio_decoder.h"
 #include "gtest/gtest.h"
 #include <fstream>
@@ -84,11 +85,12 @@ TEST(PlayerTestTagsTest, tags_returned) {
 TEST(PlayerTestTeeTest, number_of_src_pads) {
 	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
+	uint32_t result = 1;
 
 	Player *player = new Player(src);
 	player->AddSink(sink);
 
-	EXPECT_EQ(1, sink->num_src_pads());
+	EXPECT_EQ(result, sink->num_src_pads());
 
 	delete player;
 	delete sink;
@@ -100,13 +102,14 @@ TEST(PlayerTestAddSink, incrementation_of_sink_pads) {
 	FakeSink *sink1 = new FakeSink();
 	FakeSink *sink2 = new FakeSink();
 	FakeSink *sink3 = new FakeSink();
+	uint32_t result = 3;
 
 	Player *player = new Player(src);
 	EXPECT_EQ(sink1, player->AddSink(sink1));
 	EXPECT_EQ(sink2, player->AddSink(sink2));
 	EXPECT_EQ(sink3, player->AddSink(sink3));
 
-	EXPECT_EQ(3, sink1->num_src_pads());
+	EXPECT_EQ(result, sink1->num_src_pads());
 
 	delete player;
 	delete sink1;
@@ -120,6 +123,7 @@ TEST(PlayerTestRemoveSink, decrementation_of_sink_pads) {
 	FakeSink *sink1 = new FakeSink();
 	FakeSink *sink2 = new FakeSink();
 	FakeSink *sink3 = new FakeSink();
+	uint32_t result = 2;
 
 	Player *player = new Player(src);
 	player->AddSink(sink1);
@@ -128,7 +132,7 @@ TEST(PlayerTestRemoveSink, decrementation_of_sink_pads) {
 
 	player->RemoveSink(sink3);
 
-	EXPECT_EQ(2, sink1->num_src_pads());
+	EXPECT_EQ(result, sink1->num_src_pads());
 
 	delete player;
 	delete sink1;
@@ -236,5 +240,38 @@ TEST(PlayerTest10sPlay, play_10s_of_audio) {
 	delete player;
 	delete sink;
 	delete null_sink;
+	delete src;
+}
+
+TEST(PlayerTestOggTest, save_to_ogg_test) {
+	uint32_t size_er;
+	uint32_t size_r;
+
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
+	OggSink *sink = new OggSink("./test/testdata/player_unittest_file.ogg");
+	remove("./test/testdata/player_unittest_file.ogg");
+
+	Player *player = new Player(src);
+	player->AddSink(sink);
+	player->Process();
+
+	ifstream in_file_er("./test/testdata/player_unittest_file_expected_results.ogg", ifstream::binary);
+	ASSERT_TRUE(in_file_er.good()) << "TESTING CODE FAILED... could not load expected data";
+
+	ifstream in_file_r("./test/testdata/player_unittest_file.ogg", ifstream::binary);
+	ASSERT_TRUE(in_file_r.good()) << "TESTING CODE FAILED... could not load data";
+
+	in_file_er.seekg(0, ios::end);
+	size_er = in_file_er.tellg();
+	in_file_er.close();
+
+	in_file_r.seekg(0, ios::end);
+	size_r = in_file_r.tellg();
+	in_file_r.close();
+
+	ASSERT_EQ(size_er, size_r) << "TESTING CODE FAILED... file size mismatch";
+
+	delete player;
+	delete sink;
 	delete src;
 }
