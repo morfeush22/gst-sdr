@@ -89,7 +89,7 @@ void PulseSink::InitSink(void *other_data) {
 	sink_data->sink = gst_element_factory_make(name(), buff);
 	g_assert(sink_data->sink);
 
-	g_object_set(sink_data->sink, "async", FALSE, NULL);
+	g_object_set(sink_data->sink, "async", TRUE, NULL);
 
 	sink_data->removing = false;
 

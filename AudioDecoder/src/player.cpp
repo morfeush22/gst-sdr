@@ -60,7 +60,7 @@ gboolean PlayerHelpers::BusCall(GstBus *bus, GstMessage *message, gpointer playe
 	}
 
 	case GST_MESSAGE_ASYNC_DONE: {
-		g_print ("GStreamer: prerolled, lock'n'load\n");
+		g_print ("GStreamer: %s prerolled, lock'n'load\n", GST_OBJECT_NAME(message->src));
 		player_data->ready = true;
 		break;
 	}
