@@ -46,16 +46,14 @@ gboolean RingSrcHelpers::ReadData(gpointer src_data_ptr) {
 	GstBuffer *buffer;
 	GstMapInfo map;
 	uint8_t *it;
-	size_t size;
+	//size_t size;
 	GstFlowReturn ret;
-
-	gboolean paused = FALSE;
 
 	buffer = gst_buffer_new_and_alloc(a_src->buff_chunk_size_);
 	gst_buffer_map(buffer, &map, GST_MAP_WRITE);
 	it = reinterpret_cast<uint8_t *>(map.data);
 
-	size = a_src->ring_buffer_->ReadFrom(it, a_src->buff_chunk_size_);
+	a_src->ring_buffer_->ReadFrom(it, a_src->buff_chunk_size_);
 
 	gst_buffer_unmap(buffer, &map);
 
@@ -157,16 +155,16 @@ void RingSrc::ProcessThreshold() {
 	Player *player = PLAYER_CAST(PLAYER_DATA_CAST(data_->other_data)->player);
 
 	if(player->ready()) {
-		float ratio;
+		//float ratio;
 
 		if(ring_buffer_->DataStored()<ParseThreshold(0.5-threshold_)) {
-			ratio = DecrementRatio(player);
+			DecrementRatio(player);
 			//g_warning("current ratio: %f\n", ratio);
 			return;
 		}
 
 		if(ring_buffer_->DataStored()>ParseThreshold(0.5+threshold_)) {
-			ratio = IncrementRatio(player);
+			IncrementRatio(player);
 			//g_warning("current ratio: %f\n", ratio);
 			return;
 		}

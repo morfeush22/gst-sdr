@@ -30,6 +30,16 @@ static gboolean RemoveSink(gpointer data) {
 }
 
 TEST(PlayerTestBytesTest, number_of_processed_bytes) {
+	remove("./test/testdata/player_unittest_file.raw");
+	system("gst-launch-1.0 filesrc location=./test/testdata/player_unittest_file.aac \
+			! id3demux \
+			! aacparse \
+			! faad \
+			! audioconvert \
+			! pitch \
+			! filesink location=./test/testdata/player_unittest_file.raw \
+			1>/dev/null");
+
 	uint32_t size;
 	ifstream in_file("./test/testdata/player_unittest_file.raw", ifstream::binary);
 	ASSERT_TRUE(in_file.good()) << "TESTING CODE FAILED... could not load data";
@@ -50,6 +60,74 @@ TEST(PlayerTestBytesTest, number_of_processed_bytes) {
 
 	delete player;
 	delete sink;
+	delete src;
+}
+
+TEST(PlayerTestOggTest, save_to_ogg_test) {
+	remove("./test/testdata/player_unittest_file_expected_results.ogg");
+	system("gst-launch-1.0 filesrc location=./test/testdata/player_unittest_file.aac \
+			! id3demux \
+			! aacparse \
+			! faad \
+			! audioconvert \
+			! pitch \
+			! vorbisenc \
+			! oggmux \
+			! filesink location=./test/testdata/player_unittest_file_expected_results.ogg \
+			1>/dev/null");
+
+	uint32_t size_er;
+	uint32_t size_r;
+
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
+	OggSink *sink = new OggSink("./test/testdata/player_unittest_file.ogg");
+	remove("./test/testdata/player_unittest_file.ogg");
+
+	Player *player = new Player(src);
+	player->AddSink(sink);
+	player->Process();
+
+	ifstream in_file_er("./test/testdata/player_unittest_file_expected_results.ogg", ifstream::binary);
+	ASSERT_TRUE(in_file_er.good()) << "TESTING CODE FAILED... could not load expected data";
+
+	ifstream in_file_r("./test/testdata/player_unittest_file.ogg", ifstream::binary);
+	ASSERT_TRUE(in_file_r.good()) << "TESTING CODE FAILED... could not load data";
+
+	in_file_er.seekg(0, ios::end);
+	size_er = in_file_er.tellg();
+	in_file_er.close();
+
+	in_file_r.seekg(0, ios::end);
+	size_r = in_file_r.tellg();
+	in_file_r.close();
+
+	ASSERT_EQ(size_er, size_r) << "TESTING CODE FAILED... file size mismatch";
+
+	delete player;
+	delete sink;
+	delete src;
+}
+
+TEST(PlayerTest10sPlay, play_10s_of_audio) {
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
+	NullSink *null_sink = new NullSink();
+	PulseSink *sink = new PulseSink();
+
+	Player *player = new Player(src);
+
+	Data data;
+	data.player = player;
+	data.sink = sink;
+
+	player->AddSink(null_sink);
+	player->AddSink(sink);
+	g_timeout_add_seconds(10, RemoveSink, &data);
+
+	player->Process();
+
+	delete player;
+	delete sink;
+	delete null_sink;
 	delete src;
 }
 
@@ -76,6 +154,20 @@ TEST(PlayerTestTagsTest, tags_returned) {
 		getline(in_file, line);
 		EXPECT_FALSE(line.compare(it->second));
 	}
+
+	delete player;
+	delete sink;
+	delete src;
+}
+
+TEST(PlayerTestGetSrc, src_getter) {
+	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
+	FakeSink *sink = new FakeSink();
+
+	Player *player = new Player(src);
+	player->AddSink(sink);
+
+	EXPECT_EQ(src, player->abstract_src());
 
 	delete player;
 	delete sink;
@@ -141,20 +233,6 @@ TEST(PlayerTestRemoveSink, decrementation_of_sink_pads) {
 	delete src;
 }
 
-TEST(PlayerTestGetSrc, src_getter) {
-	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
-	FakeSink *sink = new FakeSink();
-
-	Player *player = new Player(src);
-	player->AddSink(sink);
-
-	EXPECT_EQ(src, player->abstract_src());
-
-	delete player;
-	delete sink;
-	delete src;
-}
-
 TEST(PlayerTestPlaybackSpeed, setting_playback_speed) {
 	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
 	FakeSink *sink = new FakeSink();
@@ -214,62 +292,6 @@ TEST(RingSrcTestIncrementRatio, incrementation_of_ratio) {
 	src->IncrementRatio(player);
 
 	EXPECT_GT(sink->playback_speed(), 1.0);
-
-	delete player;
-	delete sink;
-	delete src;
-}
-
-TEST(PlayerTest10sPlay, play_10s_of_audio) {
-	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
-	NullSink *null_sink = new NullSink();
-	PulseSink *sink = new PulseSink();
-
-	Player *player = new Player(src);
-
-	Data data;
-	data.player = player;
-	data.sink = sink;
-
-	player->AddSink(null_sink);
-	player->AddSink(sink);
-	g_timeout_add_seconds(10, RemoveSink, &data);
-
-	player->Process();
-
-	delete player;
-	delete sink;
-	delete null_sink;
-	delete src;
-}
-
-TEST(PlayerTestOggTest, save_to_ogg_test) {
-	uint32_t size_er;
-	uint32_t size_r;
-
-	FileSrc *src = new FileSrc("./test/testdata/player_unittest_file.aac");
-	OggSink *sink = new OggSink("./test/testdata/player_unittest_file.ogg");
-	remove("./test/testdata/player_unittest_file.ogg");
-
-	Player *player = new Player(src);
-	player->AddSink(sink);
-	player->Process();
-
-	ifstream in_file_er("./test/testdata/player_unittest_file_expected_results.ogg", ifstream::binary);
-	ASSERT_TRUE(in_file_er.good()) << "TESTING CODE FAILED... could not load expected data";
-
-	ifstream in_file_r("./test/testdata/player_unittest_file.ogg", ifstream::binary);
-	ASSERT_TRUE(in_file_r.good()) << "TESTING CODE FAILED... could not load data";
-
-	in_file_er.seekg(0, ios::end);
-	size_er = in_file_er.tellg();
-	in_file_er.close();
-
-	in_file_r.seekg(0, ios::end);
-	size_r = in_file_r.tellg();
-	in_file_r.close();
-
-	ASSERT_EQ(size_er, size_r) << "TESTING CODE FAILED... file size mismatch";
 
 	delete player;
 	delete sink;
